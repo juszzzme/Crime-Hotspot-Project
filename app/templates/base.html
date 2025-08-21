@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CRIMESENSE{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Custom Styles -->
+    <style>
+        /* Navigation Link Animation */
+        .nav-link {
+            position: relative;
+            color: var(--color-text) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .nav-link-text {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .nav-link-underline {
+            position: absolute;
+            bottom: 0;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background-color: var(--color-accent);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link:hover .nav-link-underline {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        .nav-link.active .nav-link-underline {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        /* Dropdown Menu Styling */
+        .dropdown-menu {
+            transition: all 0.3s ease;
+            transform: translateY(10px);
+            opacity: 0;
+            display: block;
+            visibility: hidden;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .dropdown-item {
+            color: var(--color-text) !important;
+            transition: all 0.2s ease;
+            padding: 0.5rem 1.5rem !important;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(187, 243, 0, 0.1) !important;
+            padding-left: 1.75rem !important;
+        }
+        
+        /* Button Styles */
+        .btn {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.3s ease;
+            border: none;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            padding: 0.75rem 1.75rem;
+            border-radius: 4px;
+        }
+        
+        .btn-primary {
+            background-color: var(--color-accent);
+            color: var(--color-primary) !important;
+            box-shadow: 0 4px 14px rgba(187, 243, 0, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(187, 243, 0, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--color-accent);
+            color: var(--color-accent) !important;
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--color-accent);
+            color: var(--color-primary) !important;
+        }
+        
+        /* Card Styles */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: var(--color-accent);
+        }
+        
+        .card-title {
+            color: var(--color-text);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .card-text {
+            color: var(--color-muted);
+            line-height: 1.7;
+        }
+        
+        /* Section Styling */
+        section {
+            padding: 6rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 3rem;
+            color: var(--color-text);
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--color-accent);
+        }
+        
+        /* Form Controls */
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 0.25rem rgba(187, 243, 0, 0.1);
+            color: var(--color-text);
+        }
+        
+        /* Utility Classes */
+        .text-accent {
+            color: var(--color-accent) !important;
+        }
+        
+        .bg-highlight {
+            background-color: var(--color-highlight);
+        }
+        
+        .rounded-lg {
+            border-radius: 12px;
+        }
+        
+        .shadow-lg {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        :root {
+            /* Modern Professional Color Scheme - Inspired by tech companies */
+            --color-primary: #ffffff;      /* Clean white */
+            --color-secondary: #1a1a1a;    /* Deep black */
+            --color-accent: #0066ff;       /* Professional blue */
+            --color-text: #1a1a1a;         /* Dark text for readability */
+            --color-text-light: #666666;   /* Muted text */
+            --color-bg: #ffffff;           /* White background */
+            --color-bg-light: #f8f9fa;     /* Light gray background */
+            --color-bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Blue gradient */
+            --color-border: #e9ecef;       /* Light border */
+
+            /* State Colors - Professional and accessible */
+            --color-success: #28a745;
+            --color-warning: #ffc107;
+            --color-danger: #dc3545;
+            --color-info: #17a2b8;
+
+            /* UI Colors */
+            --color-hover: rgba(0, 102, 255, 0.1);
+            --color-active: rgba(0, 102, 255, 0.2);
+
+            /* Typography - Clean and modern */
+            --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+
+            /* Spacing - Consistent scale */
+            --spacing-xs: 0.25rem;   /* 4px */
+            --spacing-sm: 0.5rem;    /* 8px */
+            --spacing-md: 1rem;      /* 16px */
+            --spacing-lg: 1.5rem;    /* 24px */
+            --spacing-xl: 2rem;      /* 32px */
+            --spacing-2xl: 3rem;     /* 48px */
+            --spacing-3xl: 4rem;     /* 64px */
+
+            /* Border Radius - Modern and subtle */
+            --border-radius-sm: 6px;
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 24px;
+
+            /* Shadows - Subtle and layered */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: var(--font-heading);
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.2;
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 700; }
+        h2 { font-size: 2rem; font-weight: 600; }
+        h3 { font-size: 1.5rem; font-weight: 600; }
+        h4 { font-size: 1.25rem; font-weight: 600; }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--spacing-md) 0;
+        }
+
+        .navbar-brand {
+            color: var(--color-secondary) !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .nav-link {
+            color: var(--color-text) !important;
+            font-weight: 500;
+            padding: var(--spacing-sm) var(--spacing-md) !important;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--color-accent) !important;
+            background-color: var(--color-hover);
+        }
+
+        .nav-link.active {
+            color: var(--color-accent) !important;
+            background-color: var(--color-active);
+        }
+
+        .btn-primary {
+            background-color: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+            font-weight: 600;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0052cc;
+            border-color: #0052cc;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-outline-primary {
+            color: var(--color-accent);
+            border: 2px solid var(--color-accent);
+            background: transparent;
+            font-weight: 600;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .form-control, .form-select {
+            background-color: var(--color-bg);
+            border: 2px solid var(--color-border);
+            color: var(--color-text);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+            outline: none;
+        }
+
+        .card {
+            background-color: var(--color-primary);
+            border: 1px solid var(--color-border);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .card-title {
+            color: var(--color-text);
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .text-muted {
+            color: var(--color-text-light) !important;
+        }
+
+        .text-accent {
+            color: var(--color-accent) !important;
+        }
+
+        ::selection {
+            background-color: var(--color-accent);
+            color: white;
+        }
+
+        /* Custom scrollbar - Modern and minimal */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-accent);
+        }
+
+        /* Utility classes */
+        .bg-gradient {
+            background: var(--color-bg-gradient);
+        }
+
+        .rounded-xl {
+            border-radius: var(--border-radius-xl) !important;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column" style="min-height: 100vh;">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+                <i class="fas fa-shield-alt me-2"></i>CRIMESENSE
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">
+                            Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.map_view') }}">
+                            Crime Map
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.about') }}">
+                            About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.contact') }}">
+                            Contact
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav align-items-center">
+                    {% if current_user and current_user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="me-2">{{ current_user.get_full_name().split(' ')[0] if current_user.get_full_name else 'User' }}</span>
+                                <div class="user-avatar" style="width: 32px; height: 32px; background-color: var(--color-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
+                                    {{ (current_user.get_full_name()[0] if current_user.get_full_name else 'U')|upper }}
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" style="background-color: var(--color-primary); border: 1px solid var(--color-border); border-radius: var(--border-radius); box-shadow: var(--shadow-lg);">
+                                <li><a class="dropdown-item d-flex align-items-center" href="#"><i class="fas fa-user me-2" style="width: 20px; text-align: center;"></i>Profile</a></li>
+                                <li><a class="dropdown-item d-flex align-items-center" href="#"><i class="fas fa-cog me-2" style="width: 20px; text-align: center;"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider" style="border-color: var(--color-border);"></li>
+                                <li><a class="dropdown-item d-flex align-items-center text-danger" href="{{ url_for('auth.logout') if url_for else '#' }}"><i class="fas fa-sign-out-alt me-2" style="width: 20px; text-align: center;"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item me-2">
+                            <a class="nav-link" href="{{ url_for('auth.login') if url_for else '#' }}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm" href="{{ url_for('auth.signup') if url_for else '#' }}">
+                                Sign Up
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Add padding to account for fixed navbar -->
+    <div style="height: 80px;"></div>
+    
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="btn btn-primary rounded-circle position-fixed" style="bottom: 2rem; right: 2rem; width: 50px; height: 50px; display: none; z-index: 1000; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert" 
+                         style="background-color: var(--color-primary); color: var(--color-text); border: 1px solid var(--color-muted);">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: invert(1);"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow-1 mb-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-5" style="background-color: var(--color-bg-light); border-top: 1px solid var(--color-border);">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a class="navbar-brand fw-bold mb-3 d-inline-block" href="{{ url_for('main.index') if url_for else '#' }}">
+                        <i class="fas fa-shield-alt me-2"></i>CRIMESENSE
+                    </a>
+                    <p class="text-muted mb-4">Empowering communities with advanced crime data visualization and analysis tools for safer neighborhoods.</p>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-4" style="color: var(--color-text);">Navigation</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('main.index') if url_for else '#' }}" class="text-muted text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.map_view') if url_for else '#' }}" class="text-muted text-decoration-none">Crime Map</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.about') if url_for else '#' }}" class="text-muted text-decoration-none">About</a></li>
+                        <li><a href="{{ url_for('main.contact') if url_for else '#' }}" class="text-muted text-decoration-none">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <h5 class="fw-bold mb-4" style="color: var(--color-text);">Contact</h5>
+                    <ul class="list-unstyled text-muted">
+                        <li class="mb-2"><i class="fas fa-envelope me-2 text-accent"></i> info@crimesense.com</li>
+                        <li><i class="fas fa-map-marker-alt me-2 text-accent"></i> 123 Safety Street, Data City</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4" style="border-color: var(--color-border);">
+            <div class="text-center">
+                <p class="mb-0 text-muted">&copy; 2025 CRIMESENSE. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Smooth Scrolling and Scroll-to-Top -->
+    <script>
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    const headerOffset = 80;
+                    const elementPosition = targetElement.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Scroll-to-top button
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        
+        function toggleScrollToTopButton() {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.style.display = 'flex';
+                scrollToTopBtn.style.alignItems = 'center';
+                scrollToTopBtn.style.justifyContent = 'center';
+            } else {
+                scrollToTopBtn.style.display = 'none';
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Event listeners
+        if (scrollToTopBtn) {
+            window.addEventListener('scroll', toggleScrollToTopButton);
+            scrollToTopBtn.addEventListener('click', scrollToTop);
+            
+            // Initialize button state
+            toggleScrollToTopButton();
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

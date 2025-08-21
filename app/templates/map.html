@@ -1,0 +1,2181 @@
+{% extends "base.html" %}
+
+{% block title %}CRIMESENSE - Interactive Map{% endblock %}
+
+{% block extra_css %}
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <!-- Leaflet Heatmap Plugin -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.css" />
+
+    <!-- Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <!-- Leaflet Heatmap Plugin JavaScript -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    
+    <style>
+        /* Modern Map Design System */
+        :root {
+            --map-controls-bg: rgba(255, 255, 255, 0.95);
+            --map-controls-border: rgba(0, 0, 0, 0.1);
+            --map-controls-text: #1a1a1a;
+            --accent-color: #0066ff;
+            --text-shadow: none;
+            --control-bg: rgba(255, 255, 255, 0.95);
+            --control-text: #1a1a1a;
+            --control-border: rgba(0, 102, 255, 0.2);
+            --hover-color: rgba(0, 102, 255, 0.1);
+            --border-radius: 12px;
+            --transition: all 0.2s ease;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: #1a1a1a;
+            background-color: #ffffff;
+            font-size: 16px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            z-index: 1;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            transition: var(--transition);
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s ease;
+        }
+        
+        /* Enhanced map tiles with better contrast and modern look */
+        .leaflet-tile {
+            filter: brightness(0.9) contrast(1.1) saturate(0.9) hue-rotate(0deg);
+            transition: var(--transition);
+        }
+        
+        .leaflet-tile:hover {
+            filter: brightness(1) contrast(1.2) saturate(1);
+        }
+        
+        /* Modern map controls with glass morphism effect */
+        .leaflet-control {
+            background: rgba(10, 25, 47, 0.8) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--control-border) !important;
+            border-radius: var(--border-radius) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+            color: var(--control-text) !important;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+        
+        .leaflet-control:hover {
+            background: rgba(10, 25, 47, 0.95) !important;
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Enhanced zoom controls */
+        .leaflet-bar a {
+            color: var(--control-text) !important;
+            background-color: transparent !important;
+            border-bottom: 1px solid var(--control-border) !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+            transition: var(--transition) !important;
+        }
+        
+        .leaflet-bar a:first-child {
+            border-top-left-radius: var(--border-radius) !important;
+            border-top-right-radius: var(--border-radius) !important;
+        }
+        
+        .leaflet-bar a:last-child {
+            border-bottom-left-radius: var(--border-radius) !important;
+            border-bottom-right-radius: var(--border-radius) !important;
+            border-bottom: none !important;
+        }
+        
+        .leaflet-bar a:hover {
+            background-color: var(--hover-color) !important;
+            color: var(--accent-color) !important;
+        }
+        
+        /* Responsive container adjustments */
+        @media (max-width: 768px) {
+            .map-container {
+                padding-top: 40px;
+                height: auto;
+                min-height: calc(100vh - 56px);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .map-container {
+                padding-top: 30px;
+            }
+        }
+        
+        .map-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem 2rem;
+            margin: 1rem;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+        
+        .map-title {
+            margin: 0 0 0.5rem 0;
+            color: #1a1a1a;
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Responsive title adjustments */
+        @media (max-width: 768px) {
+            .map-title {
+                font-size: 1.3rem;
+                padding: 8px 15px;
+                top: 5px;
+                border-width: 2px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .map-title {
+                font-size: 1.1rem;
+                padding: 6px 12px;
+                max-width: 80%;
+            }
+        }
+        
+        .map-back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #1a1a1a;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Responsive back button */
+        @media (max-width: 768px) {
+            .map-back-btn {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .map-back-btn {
+                padding: 4px 10px;
+                font-size: 0.8rem;
+                top: 5px;
+                left: 5px;
+            }
+        }
+        
+        .map-back-btn:hover {
+            background-color: #0066ff;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 102, 255, 0.2);
+        }
+        
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            margin: 0;
+            border: none;
+        }
+        
+        /* Responsive map adjustments */
+        @media (max-width: 992px) {
+            #map {
+                width: 98%;
+                height: calc(100vh - 120px);
+                margin: 15px auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            #map {
+                width: 98%;
+                height: 500px;
+                margin: 10px auto;
+                border-width: 3px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            #map {
+                width: 100%;
+                height: 400px;
+                margin: 5px auto;
+                border-width: 2px;
+                border-radius: 6px;
+            }
+        }
+        
+        .map-controls {
+            background: var(--map-controls-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--map-controls-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 12px 20px;
+            color: var(--color-text);
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 95%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .map-controls::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .map-controls::-webkit-scrollbar-thumb {
+            background: var(--color-accent);
+            border-radius: 3px;
+        }
+        
+        .map-controls > * {
+            flex: 0 0 auto;
+        }
+        
+        /* Responsive controls */
+        @media (max-width: 992px) {
+            .map-controls {
+                max-width: 800px;
+                padding: var(--spacing-sm) var(--spacing-md);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .map-controls {
+                max-width: 600px;
+                padding: 10px;
+                flex-direction: column;
+                align-items: stretch;
+                top: calc(var(--spacing-lg) + 60px);
+                gap: 8px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .map-controls {
+                width: 95%;
+                padding: 8px;
+                border-width: 2px;
+                top: calc(var(--spacing-lg) + 50px);
+                gap: 6px;
+            }
+        }
+        
+        .map-controls .form-select {
+            background-color: rgba(30, 30, 30, 0.9); /* Darker background for better contrast */
+            border: 2px solid var(--color-accent); /* Use accent color for border */
+            color: #ffffff; /* Explicit white color for better visibility */
+            transition: all 0.2s ease;
+            font-weight: 600; /* Even bolder text for better readability */
+            padding: 10px 15px; /* Further increased padding for better usability */
+            font-size: 1rem; /* Explicit font size */
+            min-width: 180px; /* Minimum width to prevent squishing */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
+        }
+        
+        /* Responsive form controls */
+        @media (max-width: 768px) {
+            .map-controls .form-select {
+                min-width: 100%;
+                padding: 8px 12px;
+                font-size: 0.95rem;
+                margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .map-controls .form-select {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+                border-width: 1px;
+            }
+        }
+        
+        .map-controls .form-select:focus {
+            background-color: var(--color-primary);
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 0.25rem var(--color-hover);
+            outline: none; /* Remove default outline */
+        }
+        
+        .map-controls .form-select option {
+            background-color: #1e1e1e; /* Dark background for better contrast */
+            color: #ffffff; /* White text for better visibility */
+            padding: 10px; /* Increased padding for better usability */
+            font-weight: 500; /* Medium font weight for better readability */
+        }
+        
+        .map-controls .btn-outline-secondary {
+            border: 2px solid var(--color-accent); /* Use accent color for border */
+            color: #ffffff; /* White text for better visibility */
+            background-color: rgba(30, 30, 30, 0.9); /* Darker background for better contrast */
+            transition: all 0.2s ease;
+            font-weight: 600; /* Bolder text */
+            padding: 10px 18px; /* Increased padding */
+            font-size: 1rem; /* Explicit font size */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
+            min-width: 120px; /* Minimum width to prevent squishing */
+        }
+        
+        /* Responsive buttons */
+        @media (max-width: 768px) {
+            .map-controls .btn-outline-secondary {
+                width: 100%;
+                padding: 8px 15px;
+                font-size: 0.95rem;
+                min-width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .map-controls .btn-outline-secondary {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+                border-width: 1px;
+            }
+        }
+        
+        .map-controls .btn-outline-secondary:hover {
+            background-color: var(--color-accent); /* Use accent color for hover */
+            border-color: var(--color-accent);
+            color: #000000; /* Black text for contrast on accent background */
+            transform: translateY(-2px); /* Subtle lift effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); /* Stronger shadow for depth */
+            cursor: pointer; /* Explicit pointer cursor */
+        }
+        
+        .map-controls .btn-outline-secondary:focus {
+            box-shadow: 0 0 0 0.25rem var(--color-hover);
+            outline: none;
+        }
+        
+        .form-label {
+            color: #ffffff; /* Explicit white color for better visibility */
+            font-weight: 700; /* Further increased font weight */
+            margin-bottom: 10px; /* Increased margin */
+            font-size: 1.1rem; /* Larger font size */
+            text-shadow: var(--text-shadow);
+            letter-spacing: 0.5px; /* Improved letter spacing */
+            display: block; /* Ensure labels are on their own line */
+        }
+        
+        /* Modern button styles */
+        .btn {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            padding: 0.6rem 1.25rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background-color: var(--accent-color) !important;
+            color: var(--color-primary) !important;
+            box-shadow: 0 4px 15px rgba(187, 243, 0, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(187, 243, 0, 0.4);
+        }
+        
+        .btn-outline-primary {
+            background: transparent !important;
+            border: 1px solid var(--accent-color) !important;
+            color: var(--accent-color) !important;
+        }
+        
+        .btn-outline-primary:hover {
+            background: rgba(187, 243, 0, 0.1) !important;
+            color: var(--accent-color) !important;
+        }
+        
+        /* Modern sidebar with glass morphism effect */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            right: -400px;
+            width: 380px;
+            height: calc(100vh - 60px);
+            background: rgba(10, 25, 47, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 1px solid var(--control-border);
+            box-shadow: -5px 0 30px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+            color: var(--color-text);
+        }
+        
+        .sidebar.show {
+            right: 0;
+        }
+        
+        /* Floating action button for filters */
+        .filter-toggle {
+            position: fixed;
+            top: 100px;
+            right: 25px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            color: var(--color-primary);
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .filter-toggle:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .filter-toggle i {
+            font-size: 1.5rem;
+        }
+        
+        /* Modern form elements */
+        .form-label {
+            color: var(--map-controls-text);
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            display: block;
+            font-size: 0.95rem;
+        }
+        
+        .form-select, .form-control {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border: 1px solid var(--control-border) !important;
+            color: var(--map-controls-text) !important;
+            margin-bottom: 1.25rem;
+            padding: 0.75rem 1rem !important;
+            border-radius: var(--border-radius) !important;
+            transition: var(--transition) !important;
+            width: 100%;
+            font-size: 0.95rem;
+        }
+        
+        .form-select:focus, .form-control:focus {
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 0.25rem rgba(187, 243, 0, 0.1) !important;
+            color: #fff !important;
+        }
+        
+        /* Custom select arrow */
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23bbf300' d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 0.75rem center !important;
+            background-size: 16px 12px !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Enhanced animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sidebar {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        /* Animation for heatmap points */
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        
+        .heat-point {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Enhanced popup styles */
+        .leaflet-popup-content-wrapper {
+            background: rgba(10, 25, 47, 0.95) !important;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--map-controls-text);
+            border-radius: var(--border-radius) !important;
+            padding: 0;
+            text-align: left;
+            border: 1px solid var(--control-border) !important;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3) !important;
+            overflow: hidden;
+        }
+        
+        .leaflet-popup-content {
+            margin: 0;
+            width: 280px !important;
+        }
+        
+        .leaflet-popup-tip-container {
+            margin-top: -1px;
+        }
+        
+        .leaflet-popup-tip {
+            background: rgba(10, 25, 47, 0.95) !important;
+            border: 1px solid var(--control-border) !important;
+            border-bottom-color: transparent !important;
+            border-right-color: transparent !important;
+            box-shadow: none !important;
+            margin: -8px 0 0 -8px !important;
+        }
+        
+        .popup-header {
+            background: linear-gradient(90deg, rgba(10, 25, 47, 0.95) 0%, rgba(30, 45, 67, 0.95) 100%);
+            color: var(--accent-color);
+            padding: 12px 15px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-bottom: 1px solid var(--control-border);
+            display: flex;
+            font-size: 0.9rem;
+            text-shadow: var(--text-shadow);
+            letter-spacing: 0.03em;
+            padding: 0.2rem 2rem;
+        }
+        
+        /* Modern loading spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 25, 47, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--control-border);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(187, 243, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: var(--accent-color);
+            font-weight: 500;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        /* Error message styles */
+        .error-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 77, 77, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 80%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .error-icon {
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        
+        .error-text {
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        
+        .error-text h4 {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+        
+        .retry-btn {
+            background: #fff !important;
+            color: #ff4d4d !important;
+            border: none !important;
+            padding: 0.6rem 1.5rem !important;
+            border-radius: 6px !important;
+            font-weight: 600 !important;
+            cursor: pointer;
+            transition: all 0.3s ease !important;
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .loading-spinner i {
+            margin-right: 10px;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="map-container">
+        {% if view_type == 'country' %}
+            <div class="map-header">
+                <h2 class="map-title">India Crime Intelligence Dashboard</h2>
+                <p style="color: #666666; margin: 0; font-size: 1.1rem;">Real-time crime data visualization and analysis</p>
+            </div>
+        {% elif view_type == 'state' %}
+            <div class="map-header">
+                <h2 class="map-title">{{ location_name }} State Analysis</h2>
+                <p style="color: #666666; margin: 0; font-size: 1rem;">Detailed crime insights for {{ location_name }}</p>
+            </div>
+            <a href="{{ url_for('main.map_view') }}" class="map-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to India
+            </a>
+        {% elif view_type == 'city' %}
+            <div class="map-header">
+                <h2 class="map-title">{{ location_name }} City Analysis</h2>
+                <p style="color: #666666; margin: 0; font-size: 1rem;">Local crime data for {{ location_name }}</p>
+            </div>
+            <a href="{{ url_for('main.state_map_view', state_name=state_name) }}" class="map-back-btn">
+                <i class="fas fa-arrow-left"></i> Back to {{ state_name }}
+            </a>
+        {% endif %}
+        
+        <div id="map"></div>
+        
+        <!-- Map Controls -->
+        <div class="map-controls">
+            <div class="row g-2">
+                {% if view_type == 'country' %}
+                <div class="col-md-4">
+                    <label for="state-select" class="form-label">State</label>
+                    <select class="form-select form-select-sm" id="state-select">
+                        <option value="">-- Select State --</option>
+                        <option value="karnataka">Karnataka</option>
+                        <option value="maharashtra">Maharashtra</option>
+                        <option value="tamilnadu">Tamil Nadu</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="telangana">Telangana</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="city-select" class="form-label">City</label>
+                    <select class="form-select form-select-sm" id="city-select" disabled>
+                        <option value="">-- Select City --</option>
+                    </select>
+                </div>
+                {% elif view_type == 'state' %}
+                <div class="col-md-8">
+                    <label for="city-select" class="form-label">City in {{ location_name }}</label>
+                    <select class="form-select form-select-sm" id="city-select">
+                        <option value="">-- Select City --</option>
+                        <!-- Cities will be populated via JavaScript -->
+                    </select>
+                </div>
+                {% endif %}
+                <div class="col-md-4">
+                    <label for="year-select" class="form-label">Year</label>
+                    <div class="d-flex">
+                        <select class="form-select form-select-sm me-2" id="year-select">
+                            <option value="2022">2022</option>
+                            <option value="2023">2023</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-secondary" id="toggle-sidebar" aria-label="Toggle filters">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    <!-- Sidebar for Filters -->
+    <div class="sidebar" id="filter-sidebar">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0">Filter Options</h5>
+            <button type="button" class="btn-close btn-close-white" id="close-sidebar"></button>
+        </div>
+        
+        <form id="crime-filter">
+            <div class="mb-3">
+                <label for="crime-type" class="form-label">Crime Types</label>
+                <div class="form-check">
+                    <input class="form-check-input crime-type-checkbox" type="checkbox" value="theft" id="type-theft" checked>
+                    <label class="form-check-label" for="type-theft">Theft</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input crime-type-checkbox" type="checkbox" value="assault" id="type-assault" checked>
+                    <label class="form-check-label" for="type-assault">Assault</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input crime-type-checkbox" type="checkbox" value="burglary" id="type-burglary" checked>
+                    <label class="form-check-label" for="type-burglary">Burglary</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input crime-type-checkbox" type="checkbox" value="robbery" id="type-robbery" checked>
+                    <label class="form-check-label" for="type-robbery">Robbery</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input crime-type-checkbox" type="checkbox" value="homicide" id="type-homicide" checked>
+                    <label class="form-check-label" for="type-homicide">Homicide</label>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="heatmap-toggle" class="form-label">Display Options</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="heatmap-toggle" checked>
+                    <label class="form-check-label" for="heatmap-toggle">Show Heatmap</label>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between mt-4">
+                <button type="reset" class="btn btn-outline-secondary" id="reset-filters">Reset</button>
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </form>
+        
+        <div class="crime-type-legend mt-4">
+            <h6><i class="fas fa-info-circle"></i> Crime Type Legend</h6>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff9d00;"></div>
+                <span>Theft</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff3d00;"></div>
+                <span>Assault</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #3d5afe;"></div>
+                <span>Burglary</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #d50000;"></div>
+                <span>Robbery</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #9c27b0;"></div>
+                <span>Homicide</span>
+            </div>
+        </div>
+        
+        <div id="active-filters" class="mt-3"></div>
+    </div>
+    
+    <!-- Toggle button for sidebar -->
+    <button class="filter-toggle" id="toggle-sidebar">
+        <i class="fas fa-filter"></i>
+    </button>
+    
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading Crime Data...</div>
+    </div>
+    
+    <!-- Error Message -->
+    <div id="errorMessage" class="error-message">
+        <i class="fas fa-exclamation-triangle error-icon"></i>
+        <div class="error-text">
+            <h4>Oops! Something went wrong</h4>
+            <p>We're having trouble loading the map data. Please check your connection and try again.</p>
+        </div>
+        <button class="btn btn-light retry-btn" onclick="window.location.reload()">
+            <i class="fas fa-sync-alt me-2"></i>Retry
+        </button>
+    </div>
+
+<script>
+    // DOM Cache for better performance
+    const domCache = {
+        stateSelect: document.getElementById('state-select'),
+        citySelect: document.getElementById('city-select'),
+        yearSelect: document.getElementById('year-select'),
+        filterSidebar: document.getElementById('filter-sidebar'),
+        mapElement: document.getElementById('map')
+    };
+    
+    // State management
+    const appState = {
+        currentYear: '2022',
+        currentState: null,
+        currentCity: null,
+        selectedCrimeTypes: new Set(),
+        mapInitialized: false
+    };
+    
+    // Function to update heatmap and markers with error handling
+    async function updateCrimeData(year, city = null) {
+        if (!appState.mapInitialized) return;
+        
+        // Show loading spinner
+        document.querySelector('.loading-spinner').style.display = 'flex';
+        
+        try {
+            // Validate year
+            const validYears = ['2022', '2023'];
+            const selectedYear = validYears.includes(year) ? year : '2022';
+            
+            // Update state
+            appState.currentYear = selectedYear;
+            if (city) appState.currentCity = city;
+            
+            // Get selected crime types
+            const selectedCrimeTypes = Array.from(document.querySelectorAll('.crime-type-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            
+            // Get view type and location from template variables
+            const viewType = '{{ view_type }}';
+            const locationId = '{{ location_id }}';
+            const locationName = '{{ location_name }}';
+            
+            // Determine API endpoint based on view type and selection
+            let endpoint = '/api/hotspots';
+            const params = new URLSearchParams();
+            
+            if (year) params.append('year', year);
+            
+            // Set parameters based on view type
+            if (viewType === 'state') {
+                params.append('state', locationId);
+                endpoint = '/api/state_hotspots';
+            } else if (viewType === 'city') {
+                // For city view, we need both state and city
+                const stateName = '{{ state_name }}' || '';
+                params.append('state', stateName);
+                params.append('city', locationId);
+                endpoint = '/api/city_hotspots';
+            } else {
+                // Country view - use dropdown selections
+                const stateSelect = document.getElementById('state-select');
+                if (stateSelect && stateSelect.value) {
+                    params.append('state', stateSelect.value);
+                    
+                    // Add city parameter if city is selected
+                    const citySelect = document.getElementById('city-select');
+                    if (citySelect && citySelect.value) {
+                        params.append('city', citySelect.value);
+                        endpoint = '/api/city_hotspots';
+                    } else {
+                        endpoint = '/api/state_hotspots';
+                    }
+                }
+            }
+            
+            // Add crime types if selected
+            if (selectedCrimeTypes.length > 0) {
+                params.append('crime_types', selectedCrimeTypes.join(','));
+            }
+            
+            console.log(`Fetching data from: ${endpoint}?${params.toString()}`);
+            
+            // For demo purposes, simulate API call with mock data
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Clear existing layers
+            if (window.heatLayer) {
+                map.removeLayer(window.heatLayer);
+                window.heatLayer = null;
+            }
+            
+            if (window.markers) {
+                window.markers.forEach(marker => map.removeLayer(marker));
+                window.markers = [];
+            }
+            
+            // Generate mock data based on view type and location
+            const mockData = generateMockCrimeData(viewType, locationId, selectedCrimeTypes);
+            
+            // Store the data for later use
+            window.crimeData = mockData;
+            
+            // Update visualization
+            updateMapVisualization(mockData);
+            updateFilterUI();
+            
+            // Show success message
+            showToast('success', `Loaded ${mockData.length} crime incidents`);
+            
+            // Update crime count
+            const crimeCountElement = document.getElementById('crime-count');
+            if (crimeCountElement) {
+                crimeCountElement.textContent = mockData.length;
+            }
+            
+        } catch (error) {
+            console.error('Error updating crime data:', error);
+            showError('Failed to load crime data. Please try again.');
+        } finally {
+            // Hide loading spinner
+            document.querySelector('.loading-spinner').style.display = 'none';
+        }
+    }
+    
+    // Helper function to generate mock crime data for demonstration
+    function generateMockCrimeData(viewType, locationId, selectedCrimeTypes) {
+        const crimeTypes = selectedCrimeTypes.length > 0 ? selectedCrimeTypes : ['theft', 'assault', 'burglary', 'robbery', 'homicide'];
+        const dataPoints = [];
+        
+        // Generate different amounts of data based on view type
+        let count, center, radius;
+        
+        switch(viewType) {
+            case 'city':
+                count = 50;
+                // City centers (approximate)
+                const cityCenters = {
+                    'bangalore': [12.9716, 77.5946],
+                    'mumbai': [19.0760, 72.8777],
+                    'chennai': [13.0827, 80.2707],
+                    'hyderabad': [17.3850, 78.4867],
+                    'delhi': [28.7041, 77.1025]
+                };
+                center = cityCenters[locationId.toLowerCase()] || [20.5937, 78.9629];
+                radius = 0.05; // Smaller radius for city view
+                break;
+            case 'state':
+                count = 100;
+                // State centers (approximate)
+                const stateCenters = {
+                    'karnataka': [15.3173, 75.7139],
+                    'maharashtra': [19.7515, 75.7139],
+                    'tamil-nadu': [11.1271, 78.6569],
+                    'delhi': [28.7041, 77.1025],
+                    'telangana': [17.123184, 79.208824]
+                };
+                center = stateCenters[locationId.toLowerCase()] || [20.5937, 78.9629];
+                radius = 0.5; // Medium radius for state view
+                break;
+            default: // country
+                count = 200;
+                center = [20.5937, 78.9629]; // Center of India
+                radius = 5; // Large radius for country view
+        }
+        
+        // Generate random data points around the center
+        for (let i = 0; i < count; i++) {
+            // Random position within radius
+            const lat = center[0] + (Math.random() - 0.5) * radius * 2;
+            const lng = center[1] + (Math.random() - 0.5) * radius * 2;
+            
+            // Random crime type from available types
+            const crimeType = crimeTypes[Math.floor(Math.random() * crimeTypes.length)];
+            
+            // Random intensity between 0.3 and 1.0
+            const intensity = 0.3 + Math.random() * 0.7;
+            
+            // Generate a plausible description
+            const descriptions = {
+                'theft': ['Wallet stolen', 'Mobile phone theft', 'Bicycle stolen', 'Bag snatching'],
+                'assault': ['Physical altercation', 'Unprovoked attack', 'Domestic violence'],
+                'burglary': ['Home break-in', 'Shop burglary', 'Office theft'],
+                'robbery': ['Armed robbery', 'Mugging', 'Carjacking'],
+                'homicide': ['Suspicious death', 'Fatal incident', 'Violent crime']
+            };
+            
+            const description = descriptions[crimeType][Math.floor(Math.random() * descriptions[crimeType].length)];
+            
+            dataPoints.push([lat, lng, intensity, crimeType, description]);
+        }
+        
+        return dataPoints;
+    }
+    
+    // Function to update map visualization with crime data
+    function updateMapVisualization(crimeData) {
+        // Initialize markers array if not exists
+        if (!window.markers) window.markers = [];
+        
+        // Clear existing markers
+        window.markers.forEach(marker => window.map.removeLayer(marker));
+        window.markers = [];
+        
+        // Process the data for visualization
+        const processedData = crimeData.map(point => {
+            return {
+                lat: point[0],
+                lng: point[1],
+                intensity: point[2],
+                type: point[3],
+                description: point[4]
+            };
+        });
+        
+        // Add markers for each crime point
+        processedData.forEach(crime => {
+            const marker = L.circleMarker(
+                [crime.lat, crime.lng],
+                {
+                    radius: 8,
+                    fillColor: getColorForCrimeType(crime.type),
+                    color: '#fff',
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }
+            );
+            
+            marker.bindPopup(`
+                <div class="crime-popup">
+                    <h6>${crime.type.toUpperCase()}</h6>
+                    <p><strong>Location:</strong> ${crime.lat.toFixed(4)}, ${crime.lng.toFixed(4)}</p>
+                    <p><strong>Description:</strong> ${crime.description || 'No description available'}</p>
+                </div>
+            `);
+            
+            marker.addTo(window.map);
+            window.markers.push(marker);
+        });
+        
+        // Add heatmap if enabled
+        const heatmapToggle = document.getElementById('heatmap-toggle');
+        if (heatmapToggle && heatmapToggle.checked) {
+            const heatData = processedData.map(crime => [
+                crime.lat,
+                crime.lng,
+                crime.intensity
+            ]);
+            
+            if (heatData.length > 0 && typeof L.heatLayer === 'function') {
+                window.heatLayer = L.heatLayer(heatData, {
+                    radius: 25,
+                    blur: 15,
+                    maxZoom: 17,
+                    minOpacity: 0.5,
+                    gradient: {
+                        0.1: '#2ecc71',
+                        0.3: '#f1c40f',
+                        0.6: '#e67e22',
+                        1.0: '#e74c3c'
+                    }
+                }).addTo(window.map);
+            }
+        }
+        
+        // Fit bounds if we have markers
+        if (window.markers.length > 0) {
+            const group = L.featureGroup(window.markers);
+            window.map.fitBounds(group.getBounds().pad(0.1));
+        }
+    }
+    
+    // Helper function to get color for crime type
+    function getColorForCrimeType(crimeType) {
+        const colors = {
+            'theft': '#3498db',      // Blue
+            'assault': '#e74c3c',    // Red
+            'burglary': '#f39c12',   // Orange
+            'robbery': '#9b59b6',    // Purple
+            'homicide': '#c0392b',   // Dark Red
+            'default': '#2c3e50'     // Dark Blue (default)
+        };
+        
+        return colors[crimeType.toLowerCase()] || colors.default;
+    }
+    
+    // Function to show error message
+    function showError(message) {
+        const errorElement = document.getElementById('error-message');
+        if (errorElement) {
+            errorElement.textContent = message;
+            document.getElementById('error-container').classList.add('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                document.getElementById('error-container').classList.remove('show');
+            }, 5000);
+        } else {
+            console.error(message);
+        }
+    }
+    
+    // Function to show toast message
+    function showToast(type, message) {
+        const toastElement = document.createElement('div');
+        toastElement.className = `toast toast-${type}`;
+        toastElement.innerHTML = `
+            <div class="toast-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toastElement);
+        setTimeout(() => {
+            toastElement.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            toastElement.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(toastElement);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Function to show loading indicator
+    function showLoading() {
+        document.querySelector('.loading-spinner').style.display = 'flex';
+    }
+    
+    // Function to hide loading indicator
+    function hideLoading() {
+        document.querySelector('.loading-spinner').style.display = 'none';
+    }
+        
+        // Check if heatmap is enabled
+        const useHeatmap = document.getElementById('heatmap-toggle').checked;
+        
+        if (useHeatmap && crimeData.length > 0) {
+            // Create heatmap data points
+            const heatPoints = crimeData.map(point => [point[0], point[1], point[2] * 10]);
+            
+            // Add heatmap layer
+            window.heatLayer = L.heatLayer(heatPoints, {
+                radius: 25,
+                blur: 15,
+                maxZoom: 17,
+                max: 10,
+                gradient: {0.3: '#00ff00', 0.5: '#ffff00', 0.8: '#ff6600', 1: '#ff0000'}
+            }).addTo(map);
+        } else {
+            // Add markers with popups
+            crimeData.forEach(point => {
+                const [lat, lng, intensity, crimeType, description] = point;
+                const marker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    fillColor: getColorForCrimeType(crimeType),
+                    color: '#fff',
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                
+                marker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h6 style="color: var(--color-secondary); margin-bottom: 8px;">${crimeType.charAt(0).toUpperCase() + crimeType.slice(1)}</h6>
+                        <p style="margin-bottom: 5px;">${description}</p>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: var(--color-muted);">
+                            <span>${appState.currentYear}</span>
+                            <span>Intensity: ${Math.round(intensity * 100)}%</span>
+                        </div>
+                    </div>
+                `);
+                
+                marker.addTo(map);
+                window.markers.push(marker);
+            });
+            
+            // Fit bounds to show all markers if there are any
+            if (crimeData.length > 0) {
+                const markerGroup = new L.featureGroup(window.markers);
+                map.fitBounds(markerGroup.getBounds().pad(0.1), {
+                    animate: true,
+                    duration: 1,
+                    easeLinearity: 0.5
+                });
+            }
+            
+            // Add smooth fade-in effect for markers
+            window.markers.forEach((marker, index) => {
+                const el = marker.getElement();
+                if (el) {
+                    el.style.opacity = 0;
+                    setTimeout(() => {
+                        el.style.transition = 'opacity 0.5s ease';
+                        el.style.opacity = 1;
+                    }, 50 * index);
+                }
+            });
+        }
+    }
+    
+    // Helper function to show toast messages
+    const showToast = function(type, message) {
+        try {
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            
+            if (document.body) {
+                document.body.appendChild(toast);
+                
+                // Auto-remove after 3 seconds
+                setTimeout(function() {
+                    if (toast && toast.parentNode) {
+                        toast.remove();
+                    }
+            let heatData = [];
+            
+            // If city is selected, filter by city, otherwise show all cities
+            if (city && yearData[city]) {
+                heatData = yearData[city];
+            } else {
+                Object.values(yearData).forEach(cityData => {
+                    heatData = heatData.concat(cityData);
+                });
+            }
+            
+            // Filter by selected crime types
+            const selectedCrimeTypes = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+                
+            const filteredData = heatData.filter(point => selectedCrimeTypes.includes(point[3]));
+            
+            // Create heatmap data points
+            const heatPoints = filteredData.map(point => [point[0], point[1], point[2] * 10]);
+            
+            // Add heatmap layer if toggled on
+            if (document.getElementById('heatmap-toggle').checked && heatPoints.length > 0) {
+                heatLayer = L.heatLayer(heatPoints, {
+                    radius: 25,
+                    blur: 15,
+                    maxZoom: 17,
+                    max: 10,
+                    gradient: {0.3: '#00ff00', 0.5: '#ffff00', 0.8: '#ff6600', 1: '#ff0000'}
+                }).addTo(map);
+            }
+            
+            // Add markers with popups
+            filteredData.forEach(point => {
+                const [lat, lng, intensity, crimeType, description] = point;
+                const marker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    fillColor: getColorForCrimeType(crimeType),
+                    color: '#fff',
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                
+                marker.bindPopup(`
+                    <div style="min-width: 200px;">
+                        <h6 style="color: var(--color-secondary); margin-bottom: 8px;">${crimeType.charAt(0).toUpperCase() + crimeType.slice(1)}</h6>
+                        <p style="margin-bottom: 5px;">${description}</p>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: var(--color-muted);">
+                            <span>${year}</span>
+                            <span>Intensity: ${Math.round(intensity * 100)}%</span>
+                        </div>
+                    </div>
+                `);
+                
+                marker.addTo(map);
+                markers.push(marker);
+            });
+            
+            // Fit bounds to show all markers if there are any
+            if (filteredData.length > 0) {
+                const markerGroup = new L.featureGroup(markers);
+                map.fitBounds(markerGroup.getBounds().pad(0.1), {
+                    animate: true,
+                    duration: 1,
+                    easeLinearity: 0.5
+                });
+            }
+            
+            // Add smooth fade-in effect for markers
+            markers.forEach((marker, index) => {
+                const el = marker.getElement();
+                if (el) {
+                    el.style.opacity = 0;
+                    setTimeout(() => {
+                        el.style.transition = 'opacity 0.5s ease';
+                        el.style.opacity = 1;
+                    }, 50 * index);
+                }
+            });
+            
+            hideLoading();
+        }
+        
+        // Get color for crime type
+        function getColorForCrimeType(crimeType) {
+            var colors = Object.create(null);
+            colors['theft'] = '#ff9d00';
+            colors['assault'] = '#ff3d00';
+            colors['burglary'] = '#3d5afe';
+            colors['robbery'] = '#d50000';
+            colors['homicide'] = '#9c27b0';
+            return colors[String(crimeType).toLowerCase()] || '#666';
+        }
+        
+        // Form submission handler
+        var crimeFilter = document.getElementById('crime-filter');
+        if (crimeFilter) {
+            crimeFilter.addEventListener('submit', function(e) {
+                e.preventDefault();
+                var yearSelect = document.getElementById('year-select');
+                var citySelect = document.getElementById('city-select');
+                var year = yearSelect ? yearSelect.value : '';
+                var cityName = citySelect && citySelect.selectedIndex > 0 ? 
+                    citySelect.options[citySelect.selectedIndex].text : null;
+                
+                // Show loading state
+                showLoading();
+                
+                // Update crime data
+                updateCrimeData(year, cityName)
+                    .then(function() {
+                        var filterSidebar = document.getElementById('filter-sidebar');
+                        if (filterSidebar) {
+                            filterSidebar.classList.remove('show');
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Error updating crime data:', error);
+                        alert('Failed to load crime data. Please try again.');
+                    })
+                    .finally(function() {
+                        hideLoading();
+                    });
+                hideLoading();
+            }
+        });
+        
+        // Filter crime data based on current state
+        function getFilteredCrimeData() {
+            var yearData = window.crimeDataByYear[window.appState.currentYear] || [];
+            return yearData.filter(function(crime) {
+                var currentCity = window.appState.currentCity;
+                var crimeCity = crime.city ? crime.city.toLowerCase() : '';
+                var matchesCity = !currentCity || crimeCity === currentCity.toLowerCase();
+                var matchesType = window.appState.selectedCrimeTypes.size === 0 || 
+                               window.appState.selectedCrimeTypes.has(
+                                   crime.type ? crime.type.toLowerCase() : ''
+                               );
+                return matchesCity && matchesType;
+            });
+        }
+        
+        function updateMapVisualization(filteredData) {
+            // Clear existing layers
+            if (window.heatLayer) {
+                window.map.removeLayer(window.heatLayer);
+                window.heatLayer = null;
+            }
+            
+            if (window.markerLayer) {
+                window.map.removeLayer(window.markerLayer);
+                window.markerLayer = null;
+            }
+            
+            // Add heatmap layer if enabled
+            if (document.getElementById('heatmap-toggle').checked) {
+                const heatPoints = filteredData.map(crime => [
+                    crime.lat, 
+                    crime.lng, 
+                    crime.severity || 1
+                ]);
+                
+                if (heatPoints.length > 0 && typeof L.heatLayer === 'function') {
+                    window.heatLayer = L.heatLayer(heatPoints, {
+                        radius: 25,
+                        blur: 15,
+                        maxZoom: 17,
+                        minOpacity: 0.5,
+                        gradient: {
+                            0.1: '#2ecc71',
+                            0.3: '#f1c40f',
+                            0.6: '#e67e22',
+                            1.0: '#e74c3c'
+                        }
+                    }).addTo(window.map);
+                } else {
+                    console.warn('Heatmap plugin not available or no data points');
+                }
+            }
+            
+            // Add markers
+            const markers = filteredData.map(crime => {
+                const marker = L.circleMarker(
+                    [crime.lat, crime.lng],
+                    {
+                        radius: 8,
+                        fillColor: getColorForCrimeType(crime.type),
+                        color: '#fff',
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }
+                );
+                
+                marker.bindPopup(`
+                    <div class="crime-popup">
+                        <h6>${crime.type.toUpperCase()}</h6>
+                        <p><strong>Location:</strong> ${crime.location}</p>
+                        <p><strong>Date:</strong> ${crime.date || 'N/A'}</p>
+                        <p><strong>Description:</strong> ${crime.description || 'No description available'}</p>
+                    </div>
+                `);
+                
+                return marker;
+            });
+            
+            window.markerLayer = L.layerGroup(markers).addTo(window.map);
+            
+            // Fit bounds if we have markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                window.map.fitBounds(group.getBounds().pad(0.1), {
+                    animate: true,
+                    duration: 1,
+                    easeLinearity: 0.5
+                });
+            }
+        }
+        
+        function updateFilterUI() {
+            // Update active filters display
+            const activeFilters = [];
+            if (appState.currentCity) activeFilters.push(appState.currentCity);
+            if (appState.selectedCrimeTypes.size > 0) {
+                activeFilters.push(`${appState.selectedCrimeTypes.size} crime types`);
+            }
+            
+            const activeFiltersElement = document.getElementById('active-filters');
+            if (activeFilters.length > 0) {
+                activeFiltersElement.innerHTML = `
+                    <small class="text-muted">Active filters: ${activeFilters.join(', ')}</small>
+                `;
+            } else {
+                activeFiltersElement.innerHTML = '';
+            }
+        }
+        
+        // Navigate to state/city pages on selection
+        domCache.stateSelect.addEventListener('change', function() {
+            const state = this.value;
+            if (state) {
+                window.location.href = `/map/state/${state}`;
+            }
+            const citySelect = document.getElementById('city-select');
+            const selectedState = this.value;
+            
+            // Reset city select
+            citySelect.innerHTML = '<option value="">-- Select City --</option>';
+            citySelect.disabled = !selectedState;
+            
+            if (selectedState) {
+                // Add cities for selected state
+                stateCityData[selectedState].forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.toLowerCase();
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+                
+                // Zoom to state (simplified for demo)
+                const stateCenters = {
+                    'karnataka': [15.3173, 75.7139],
+                    'maharashtra': [19.7515, 75.7139],
+                    'tamilnadu': [11.1271, 78.6569],
+                    'delhi': [28.6139, 77.2090]
+                };
+                
+                if (stateCenters[selectedState]) {
+                    map.setView(stateCenters[selectedState], 7);
+                }
+            }
+            
+            // Update map with selected state data
+            updateCrimeData(document.getElementById('year-select').value);
+        });
+        
+        // City selection
+        document.getElementById('city-select').addEventListener('change', function() {
+            const selectedCity = this.value;
+            if (selectedCity) {
+                updateCrimeData(
+                    document.getElementById('year-select').value,
+                    this.options[this.selectedIndex].text
+                );
+            }
+        });
+        
+        // Year selection
+        document.getElementById('year-select').addEventListener('change', function() {
+            const citySelect = document.getElementById('city-select');
+            updateCrimeData(
+                this.value,
+                citySelect.selectedIndex > 0 ? citySelect.options[citySelect.selectedIndex].text : null
+            );
+        });
+        
+        // Heatmap toggle
+        document.getElementById('heatmap-toggle').addEventListener('change', function() {
+            const year = document.getElementById('year-select').value;
+            const citySelect = document.getElementById('city-select');
+            updateCrimeData(
+                year,
+                citySelect.selectedIndex > 0 ? citySelect.options[citySelect.selectedIndex].text : null
+            );
+        });
+        
+        // Filter form submission
+        document.getElementById('crime-filter').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const year = document.getElementById('year-select').value;
+            const citySelect = document.getElementById('city-select');
+            updateCrimeData(
+                year,
+                citySelect.selectedIndex > 0 ? citySelect.options[citySelect.selectedIndex].text : null
+            );
+            document.getElementById('filter-sidebar').classList.remove('show');
+        });
+        
+        // Handle form reset
+        document.getElementById('crime-filter').addEventListener('reset', function() {
+            // Reset the date range picker
+            $('input#date-range').val('');
+        });
+        
+        // Initialize with default data
+        // Initialize the application
+        // Initialize map when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Get view type and location from template variables
+                const viewType = '{{ view_type }}';
+                const locationId = '{{ location_id }}';
+                
+                console.log('Initializing map...');
+                const mapElement = document.getElementById('map');
+                if (!mapElement) {
+                    console.error('Map container not found');
+                    return;
+                }
+                
+                // Set map container dimensions
+                mapElement.style.height = '100%';
+                
+                // Initialize the map
+                window.map = L.map('map');
+                
+                // Add tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 18
+                }).addTo(window.map);
+                
+                // Set initial center and zoom based on view type
+                let center, zoom;
+                switch(viewType) {
+                    case 'state':
+                        center = [20.5937, 78.9629]; // Center of India
+                        zoom = 6;
+                        break;
+                    case 'city':
+                        center = [20.5937, 78.9629]; // Center of India
+                        zoom = 10;
+                        break;
+                    default: // country
+                        center = [20.5937, 78.9629]; // Center of India
+                        zoom = 5;
+                }
+                
+                // Set the view with the determined center and zoom
+                window.map.setView(center, zoom);
+                
+                // Mark map as initialized
+                appState.mapInitialized = true;
+                
+                // Generate initial mock data
+                const mockData = generateMockCrimeData(viewType, locationId, []);
+                
+                // Update visualization with initial data
+                updateMapVisualization(mockData);
+                updateFilterUI();
+                
+                // Handle state selection changes
+                function handleStateChange() {
+                    clearTimeout(window.stateChangeTimeout);
+                    window.stateChangeTimeout = setTimeout(async () => {
+                        try {
+                            const selectedState = domCache.stateSelect.value;
+                            const citySelect = domCache.citySelect;
+                            
+                            // Handle city selection based on state
+                            if (selectedState) {
+                                // In a real app, you would fetch cities for the selected state
+                                citySelect.innerHTML = '<option value="">Loading cities...</option>';
+                                citySelect.disabled = true;
+                                
+                                // Simulate API call
+                                setTimeout(() => {
+                                    citySelect.innerHTML = `
+                                        <option value="">Select a city</option>
+                                        <option value="mumbai">Mumbai</option>
+                                        <option value="delhi">Delhi</option>
+                                        <option value="bengaluru">Bengaluru</option>
+                                        <option value="hyderabad">Hyderabad</option>
+                                        <option value="chennai">Chennai</option>
+                                    `;
+                                    citySelect.disabled = false;
+                                }, 500);
+                            } else {
+                                citySelect.innerHTML = '<option value="">Select a state first</option>';
+                                citySelect.disabled = true;
+                            }
+                        } catch (error) {
+                            console.error('Error handling state change:', error);
+                            showError('Failed to load cities. Please try again.');
+                        }
+                    }, 300);
+                }
+                
+                // Initialize window resize timer
+                window.resizeTimer = null;
+
+                /**
+                 * Handles the actual resize logic when debounce timer completes
+                 * @private
+                 */
+                function handleResizeLogic() {
+                    try {
+                        if (window.console && typeof window.console.log === 'function') {
+                            window.console.log('Window resized, updating map...');
+                        }
+                        if (window.map && typeof window.map.invalidateSize === 'function') {
+                            window.map.invalidateSize();
+                        }
+                    } catch (error) {
+                        if (window.console && typeof window.console.error === 'function') {
+                            window.console.error('Error in resize handler:', error);
+                        }
+                    }
+                }
+
+                /**
+                 * Handles window resize events with debouncing
+                 * @private
+                 */
+                function handleResize() {
+                    if (window.resizeTimer) {
+                        clearTimeout(window.resizeTimer);
+                    }
+                    window.resizeTimer = setTimeout(handleResizeLogic, 250);
+                }
+
+                /**
+                 * Debounced resize handler to prevent performance issues
+                 * @private
+                 */
+                function handleResizeDebounced() {
+                    if (window.resizeTimer) {
+                        clearTimeout(window.resizeTimer);
+                    }
+                    window.resizeTimer = setTimeout(handleResize, 250);
+                }
+
+                // Initialize event listeners in a self-executing function
+                (function initializeEventHandlers() {
+                    // Check for required browser features
+                    if (typeof window === 'undefined' || 
+                        typeof window.addEventListener !== 'function' ||
+                        typeof window.removeEventListener !== 'function') {
+                        return;
+                    }
+
+                    // Add the resize event listener
+                    window.addEventListener('resize', handleResizeDebounced);
+                    
+                    // Define cleanup function
+                    function cleanupEventListeners() {
+                        window.removeEventListener('resize', handleResizeDebounced);
+                        window.removeEventListener('unload', cleanupEventListeners);
+                    }
+                    
+                    // Add unload listener for cleanup
+                    window.addEventListener('unload', cleanupEventListeners);
+                    
+                    // Return cleanup function in case it's needed elsewhere
+                    return cleanupEventListeners;
+                })();
+
+                // Log map initialization completion
+                (function logMapInitialization() {
+                    if (window.console && typeof window.console.log === 'function') {
+                        window.console.log('Map initialization complete');
+                    }
+                })();
+                
+                /**
+                 * Loads GeoJSON data from the specified URL
+                 * @param {string} url - The URL to fetch GeoJSON data from
+                 * @param {string} name - Name of the GeoJSON being loaded (for error messages)
+                 * @returns {Promise<Object|null>} The parsed GeoJSON data or null if loading failed
+                 */
+                async function loadGeoJSON(url, name) {
+                    try {
+                        // Validate input parameters
+                        if (!url || typeof url !== 'string') {
+                            throw new Error('Invalid URL provided for GeoJSON');
+                        }
+                        
+                        // Fetch the GeoJSON data
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`Failed to load ${name} GeoJSON: ${response.statusText}`);
+                        }
+                        
+                        // Parse the response as JSON
+                        const data = await response.json();
+                        
+                        // GeoJSON options with named functions
+                        function getStyle() {
+                            return {
+                                color: '#ffffff',
+                                weight: 2,
+                                fillColor: 'rgba(0, 0, 0, 0.1)',
+                                fillOpacity: 0.3
+                            };
+                        }
+                        
+                        function onEachFeature(feature, layer) {
+                            if (feature.properties && feature.properties.name) {
+                                var popupContent = '<strong>' + 
+                                    feature.properties.name + 
+                                    '</strong>';
+                                layer.bindPopup(popupContent);
+                            }
+                        }
+                        
+                        var geoJsonOptions = {
+                            style: getStyle,
+                            onEachFeature: onEachFeature
+                        };
+                        
+                        // Return the GeoJSON layer
+                        return L.geoJSON(data, geoJsonOptions);
+                    } catch (error) {
+                        console.error(`Error loading ${name} GeoJSON:`, error);
+                        return null;
+                    }
+                };
+
+                // Load appropriate GeoJSON based on view type
+                let geoJsonPromise;
+                switch(viewType) {
+                    case 'country':
+                        geoJsonPromise = loadGeoJSON('/static/geojson/india.geojson', 'India');
+                        break;
+                    case 'state':
+                        geoJsonPromise = loadGeoJSON(`/static/geojson/states/${locationId}.geojson`, locationId);
+                        break;
+                    case 'city':
+                        geoJsonPromise = loadGeoJSON(`/static/geojson/cities/${locationId}.geojson`, locationId);
+                        break;
+                    default:
+                        console.error('Invalid view type:', viewType);
+                        return;
+                }
+
+                // Add the loaded GeoJSON to the map
+                geoJsonPromise.then(geoJsonLayer => {
+                    if (geoJsonLayer) {
+                        geoJsonLayer.addTo(window.map);
+                    }
+                }).catch(error => {
+                    console.error('Error adding GeoJSON to map:', error);
+                });
+
+                // Initialize event listeners for UI interactions
+                initializeEventListeners();
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                // Fallback to simpler map initialization
+                window.map = L.map('map').setView([20.5937, 78.9629], 5);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 18
+                }).addTo(window.map);
+            }
+
+                // Add zoom control if not already added
+                if (window.map && !window.map.zoomControl) {
+                    window.map.zoomControl = L.control.zoom({
+                        position: 'bottomright',
+                        zoomInTitle: 'Zoom in',
+                        zoomOutTitle: 'Zoom out'
+                    });
+                    window.map.zoomControl.addTo(window.map);
+                }
+                
+                // Initialize state if not already initialized
+                if (!window.appState) {
+                    window.appState = {};
+                }
+                window.appState.mapInitialized = true;
+                window.appState.currentYear = window.appState.currentYear || new Date().getFullYear();
+                
+                try {
+                    // Load initial data
+                    if (typeof updateCrimeData === 'function') {
+                        await updateCrimeData(window.appState.currentYear);
+                    }
+                    
+                    // Initialize event listeners if not already initialized
+                    if (typeof initializeEventListeners === 'function') {
+                        initializeEventListeners();
+                    }
+                } catch (error) {
+                    console.error('Error in post-initialization:', error);
+                    if (typeof showError === 'function') {
+                        showError('Error initializing application data. Some features may not work correctly.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                if (typeof showError === 'function') {
+                    showError('Failed to initialize map. Please refresh the page.');
+                }
+            }
+        });
+        
+        function initializeEventListeners() {
+            // State selection with debounce
+            domCache.stateSelect.addEventListener('change', handleStateChange);
+            
+            // City selection
+            domCache.citySelect.addEventListener('change', function() {
+            const state = domCache.stateSelect.value;
+            const city = this.value;
+            if (state && city) {
+                window.location.href = `/map/state/${state}/city/${city}`;
+            }
+            
+            // Year selection
+            if (domCache.yearSelect) {
+                domCache.yearSelect.addEventListener('change', function yearChangeHandler(e) {
+                    if (typeof updateCrimeData === 'function') {
+                        updateCrimeData(e.target.value);
+                    }
+                });
+            }
+            
+            // Crime type checkboxes
+            const crimeTypeCheckboxes = document.querySelectorAll('.crime-type-checkbox');
+            crimeTypeCheckboxes.forEach(function addCheckboxListener(checkbox) {
+                checkbox.addEventListener('change', function checkboxChangeHandler(e) {
+                    const type = e.target.value.toLowerCase();
+                    if (e.target.checked) {
+                        appState.selectedCrimeTypes.add(type);
+                    } else {
+                        appState.selectedCrimeTypes.delete(type);
+                    }
+                    if (typeof updateCrimeData === 'function') {
+                        updateCrimeData(appState.currentYear);
+                    }
+                });
+            });
+            });
+            
+            // Toggle sidebar
+            const toggleSidebar = document.getElementById('toggle-sidebar');
+            if (toggleSidebar) {
+                toggleSidebar.addEventListener('click', () => {
+                    if (domCache.filterSidebar) {
+                        domCache.filterSidebar.classList.toggle('show');
+                    }
+                });
+            }
+            
+            // Close sidebar
+            document.getElementById('close-sidebar').addEventListener('click', () => {
+                domCache.filterSidebar.classList.remove('show');
+            });
+            
+            // Reset filters
+            document.getElementById('reset-filters').addEventListener('click', () => {
+                appState.selectedCrimeTypes.clear();
+                appState.currentCity = null;
+                appState.currentState = null;
+                
+                // Reset form
+                domCache.stateSelect.selectedIndex = 0;
+                domCache.citySelect.innerHTML = '<option value="">-- Select City --</option>';
+                domCache.citySelect.disabled = true;
+                
+                // Uncheck all crime type checkboxes
+                document.querySelectorAll('.crime-type-checkbox').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Reset map view
+                map.setView([20.5937, 78.9629], 5);
+                
+                // Reload data
+                updateCrimeData('2022');
+            });
+            
+            // Handle map click to show crime details
+            map.on('click', function(e) {
+                // You can add custom behavior for map clicks here
+                // For example, showing a popup with coordinates
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`<div class="text-center">
+                        <p>Coordinates:</p>
+                        <p>${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}</p>
+                    </div>`)
+                    .openOn(map);
+            });
+        }
+        
+        function handleStateChange() {
+            clearTimeout(window.stateChangeTimeout);
+            window.stateChangeTimeout = setTimeout(async () => {
+                const selectedState = domCache.stateSelect.value;
+                const citySelect = domCache.citySelect;
+                
+                // Reset city select
+                citySelect.innerHTML = '<option value="">-- Select City --</option>';
+                citySelect.disabled = !selectedState;
+                
+                if (selectedState) {
+                    // Add cities for selected state
+                    stateCityData[selectedState].forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.toLowerCase();
+                        option.textContent = city;
+                        citySelect.appendChild(option);
+                    });
+                    
+                    // Update state in app state
+                    appState.currentState = selectedState;
+                    appState.currentCity = null;
+                    
+                    // Update map view
+                    const stateCenters = {
+                        'karnataka': [15.3173, 75.7139],
+                        'maharashtra': [19.7515, 75.7139],
+                        'tamilnadu': [11.1271, 78.6569],
+                        'delhi': [28.6139, 77.2090]
+                    };
+                    
+                    if (stateCenters[selectedState]) {
+                        window.map.flyTo(stateCenters[selectedState], 8, {
+                            duration: 1,
+                            easeLinearity: 0.5
+                        });
+                    }
+                }
+                
+                // Update crime data
+                updateCrimeData(appState.currentYear);
+            }, 300);
+        }
+        
+        function handleCityChange() {
+            const selectedCity = domCache.citySelect.value;
+            appState.currentCity = selectedCity || null;
+            updateCrimeData(appState.currentYear, selectedCity);
+        }
+</script>
+
+<style>
+    /* Additional styles for crime markers and popups */
+    .crime-marker {
+        transition: all 0.3s ease;
+        background: none !important;
+        border: none !important;
+    }
+    
+    .crime-marker-inner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: currentColor;
+        opacity: 0.9;
+        border-radius: 50%;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .crime-marker-inner {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--color-text);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        color: white;
+        font-size: 12px;
+    }
+    
+    .crime-popup {
+        min-width: 220px;
+        background: var(--color-primary);
+        border-radius: var(--border-radius);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .crime-popup h6 {
+        color: var(--color-secondary);
+        margin: 0 0 var(--spacing-sm) 0;
+        font-family: var(--font-heading);
+        font-size: 1.1rem;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: var(--spacing-xs);
+        margin: 0 0 5px 0;
+        font-weight: 600;
+    }
+    
+    .crime-popup p {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+    }
+    
+    .crime-popup small {
+        font-size: 12px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            right: -100%;
+        }
+        
+        .sidebar.show {
+            right: 0;
+        }
+        
+        .navbar .form-select {
+            max-width: 120px;
+        }
+    }
+    </style>
+{% endblock %}

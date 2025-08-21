@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}CRIMESENSE - Advanced Crime Analytics Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: var(--color-bg-gradient);
+        color: white;
+        padding: 8rem 0 6rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" /><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:1" /></linearGradient></defs><path d="M0,300 Q250,200 500,300 T1000,300 L1000,0 L0,0 Z" fill="url(%23grad)"/></svg>') no-repeat center center;
+        background-size: cover;
+        opacity: 0.3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: var(--color-accent);
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--spacing-lg);
+        color: white;
+        font-size: 2rem;
+    }
+
+    .feature-card {
+        transition: all 0.3s ease;
+        height: 100%;
+        border: none;
+        padding: var(--spacing-xl);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .stats-section {
+        background: var(--color-bg-light);
+        padding: var(--spacing-3xl) 0;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: var(--spacing-lg);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--color-accent);
+        display: block;
+        line-height: 1;
+    }
+
+    .stat-label {
+        color: var(--color-text-light);
+        font-weight: 500;
+        margin-top: var(--spacing-sm);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-3 fw-bold mb-4">
+                        Advanced Crime Analytics for
+                        <span style="color: #bbf300;">Safer Communities</span>
+                    </h1>
+                    <p class="lead mb-5" style="font-size: 1.25rem; opacity: 0.9;">
+                        Harness the power of data visualization and machine learning to understand crime patterns,
+                        predict hotspots, and make informed decisions for public safety.
+                    </p>
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        {% if current_user and current_user.is_authenticated %}
+                            <a href="{{ url_for('main.map_view') if url_for else '#' }}" class="btn btn-light btn-lg px-4 py-3">
+                                <i class="fas fa-map-marked-alt me-2"></i>Explore Crime Map
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('auth.signup') if url_for else '#' }}" class="btn btn-light btn-lg px-4 py-3">
+                                <i class="fas fa-rocket me-2"></i>Get Started Free
+                            </a>
+                            <a href="{{ url_for('main.about') if url_for else '#' }}" class="btn btn-outline-light btn-lg px-4 py-3">
+                                <i class="fas fa-info-circle me-2"></i>Learn More
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <div style="background: rgba(255,255,255,0.1); border-radius: var(--border-radius-xl); padding: var(--spacing-xl); backdrop-filter: blur(10px);">
+                        <i class="fas fa-shield-alt" style="font-size: 8rem; opacity: 0.7;"></i>
+                        <h3 class="mt-3">Real-time Crime Intelligence</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number">1M+</span>
+                    <div class="stat-label">Crime Records Analyzed</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <div class="stat-label">Cities Covered</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number">99.9%</span>
+                    <div class="stat-label">Accuracy Rate</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-item">
+                    <span class="stat-number">24/7</span>
+                    <div class="stat-label">Real-time Updates</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section style="padding: var(--spacing-3xl) 0;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-4">Powerful Crime Intelligence Platform</h2>
+            <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;">
+                Our advanced analytics platform provides comprehensive insights into crime patterns
+                and trends to help communities stay safer.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card feature-card text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h4 class="card-title">Interactive Crime Maps</h4>
+                        <p class="card-text text-muted">
+                            Visualize crime data with our advanced mapping technology. Filter by crime type,
+                            time period, and location to get precise insights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card feature-card text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4 class="card-title">AI-Powered Predictions</h4>
+                        <p class="card-text text-muted">
+                            Machine learning algorithms analyze historical data to predict crime hotspots
+                            and help law enforcement allocate resources effectively.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card feature-card text-center">
+                    <div class="card-body">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="card-title">Advanced Analytics</h4>
+                        <p class="card-text text-muted">
+                            Comprehensive crime statistics, trend analysis, and detailed reports
+                            to support data-driven decision making.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section style="background: var(--color-bg-light); padding: var(--spacing-3xl) 0;">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-4">How CRIMESENSE Works</h2>
+            <p class="lead text-muted" style="max-width: 600px; margin: 0 auto;">
+                Our platform makes crime data analysis simple and accessible for everyone
+            </p>
+        </div>
+
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: bold;">1</div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="fw-bold">Data Collection</h5>
+                                <p class="text-muted mb-0">We aggregate crime data from multiple official sources and government databases across India.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: bold;">2</div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="fw-bold">AI Analysis</h5>
+                                <p class="text-muted mb-0">Advanced machine learning algorithms process and analyze patterns in the crime data.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; font-weight: bold;">3</div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="fw-bold">Visualization</h5>
+                                <p class="text-muted mb-0">Interactive maps and charts make complex crime data easy to understand and actionable.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <div style="background: white; border-radius: var(--border-radius-xl); padding: var(--spacing-xl); box-shadow: var(--shadow-lg);">
+                        <i class="fas fa-cogs text-primary" style="font-size: 6rem; opacity: 0.8;"></i>
+                        <h4 class="mt-3 text-primary">Powered by AI</h4>
+                        <p class="text-muted">Advanced algorithms working 24/7</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section style="padding: var(--spacing-3xl) 0;">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="display-5 fw-bold mb-4">Start Making Data-Driven Decisions Today</h2>
+            <p class="lead text-muted mb-5" style="max-width: 600px; margin: 0 auto;">
+                Join law enforcement agencies, researchers, and community leaders who trust CRIMESENSE
+                for accurate crime intelligence.
+            </p>
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                {% if current_user and current_user.is_authenticated %}
+                    <a href="{{ url_for('main.map_view') if url_for else '#' }}" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="fas fa-map-marked-alt me-2"></i>Explore Crime Map
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.signup') if url_for else '#' }}" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="fas fa-rocket me-2"></i>Get Started Free
+                    </a>
+                    <a href="{{ url_for('main.contact') if url_for else '#' }}" class="btn btn-outline-primary btn-lg px-5 py-3">
+                        <i class="fas fa-phone me-2"></i>Contact Sales
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats on scroll
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumbers = entry.target.querySelectorAll('.stat-number');
+                    statNumbers.forEach(stat => {
+                        const finalValue = stat.textContent;
+                        stat.textContent = '0';
+
+                        // Simple counter animation
+                        let current = 0;
+                        const increment = 1;
+                        const timer = setInterval(() => {
+                            current += increment;
+                            if (finalValue.includes('M+')) {
+                                stat.textContent = (current / 100).toFixed(1) + 'M+';
+                                if (current >= 100) clearInterval(timer);
+                            } else if (finalValue.includes('+')) {
+                                stat.textContent = current + '+';
+                                if (current >= parseInt(finalValue)) clearInterval(timer);
+                            } else if (finalValue.includes('%')) {
+                                stat.textContent = (current / 10).toFixed(1) + '%';
+                                if (current >= 999) clearInterval(timer);
+                            } else {
+                                stat.textContent = finalValue;
+                                clearInterval(timer);
+                            }
+                        }, 20);
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        const statsSection = document.querySelector('.stats-section');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+
+        // Add smooth hover effects to feature cards
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -52,3 +52,4 @@ Thumbs.db
 data/raw/
 data/processed/
 temp_extract/
+.qodo

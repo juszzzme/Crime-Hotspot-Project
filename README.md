@@ -1,53 +1,101 @@
-# Crime Hotspot Visualization Platform
+# Crime Hotspot Visualization Project
 
-## Project Overview
-An interactive web platform that visualizes crime hotspots across Indian cities with an AI-powered chatbot assistant. The platform allows users to explore crime data through zoomable maps and get real-time safety information.
+An interactive visualization tool for analyzing crime patterns across India, with a focus on Tamil Nadu and Chennai.
 
 ## Features
-- Interactive map with zoomable interface (Country → State → City → Neighborhood)
-- Heatmap visualization of crime data
-- AI Chatbot for crime-related queries
-- Real-time crime statistics and safety tips
-- Responsive design for all devices
 
-## Project Structure
-```
-├── app.py                # Main Flask application
-├── requirements.txt      # Python dependencies
-├── data/                 # Data storage
-│   ├── raw/             # Original, unprocessed data
-│   └── processed/       # Cleaned and processed data
-├── models/              # Trained ML models
-├── static/              # Static files (CSS, JS, images)
-│   ├── css/
-│   ├── js/
-│   └── images/
-└── templates/           # HTML templates
-    └── index.html
-```
+- **Interactive Maps**: Visualize crime data across Indian states
+- **Data Analysis**: Explore crime trends and patterns
+- **Open Source**: No paid APIs required
+- **Local Data**: Works with locally stored data files
 
-## Setup Instructions
-1. Clone the repository
-2. Install dependencies:
+## Getting Started
+
+### Prerequisites
+
+- Python 3.7+
+- Anaconda (recommended)
+- Required Python packages (install using `pip install -r requirements.txt`):
+  - pandas
+  - geopandas
+  - folium
+  - matplotlib
+  - jupyter
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/Crime-Hotspot-Project.git
+   cd Crime-Hotspot-Project
    ```
+
+2. Install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
-3. Place your data files in the appropriate directories
-4. Run the application:
-   ```
-   python app.py
-   ```
-5. Open `http://localhost:5000` in your browser
 
-## Data Requirements
-Please organize your data in the following structure:
-- `data/raw/ncrb/` - NCRB crime data (PDF)
-- `data/raw/police/` - State/City police data (CSV/Excel)
-- `data/raw/geo/` - Geographic data (shapefiles, GeoJSON)
+## Project Structure
+
+```
+├── data/                    # Data files
+│   ├── raw/                # Original, immutable data
+│   ├── processed/          # Cleaned and processed data
+│   └── interim/            # Intermediate data
+├── docs/                   # Documentation
+├── notebooks/              # Jupyter notebooks for exploration
+├── reports/                # Generated analysis and visualizations
+│   ├── figures/            # Static visualizations
+│   └── maps/               # Interactive map files
+└── src/                    # Source code
+    ├── data/               # Data processing scripts
+    └── visualization/      # Visualization scripts
+```
+
+## Usage
+
+### Generating the Interactive Map
+
+1. Run the map generation script:
+   ```bash
+   python src/visualization/interactive_map.py
+   ```
+
+2. Open the generated HTML file in your browser:
+   ```
+   reports/maps/india_crime_map.html
+   ```
+
+### Exploring Data
+
+Use the Jupyter notebooks in the `notebooks/` directory to explore the data:
+
+```bash
+jupyter notebook notebooks/exploratory/explore_geo_data.ipynb
+```
+
+## Documentation
+
+- [Interactive Map Guide](docs/INTERACTIVE_MAP_GUIDE.md): How to use and customize the interactive map
+- [Project Structure](docs/PROJECT_STRUCTURE_GUIDE.md): Detailed explanation of the project organization
+- [Data Processing](docs/DATA_PROCESSING_TECHNIQUES.md): Information about data cleaning and processing
 
 ## Contributing
+
+Contributions are welcome! Please follow these steps:
+
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Data sources: NCRB, OpenStreetMap
+- Built with Python and open-source libraries
+- Special thanks to all contributors

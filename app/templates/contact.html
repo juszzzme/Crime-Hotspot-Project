@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Contact - CRIMESENSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-contact {
+        background: var(--color-bg-gradient);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 4rem;
+    }
+
+    .contact-card {
+        background: white;
+        border-radius: var(--border-radius-lg);
+        padding: var(--spacing-xl);
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid var(--color-border);
+    }
+
+    .contact-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--color-accent);
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--spacing-lg);
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .form-floating {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+    }
+
+    .form-floating > textarea.form-control {
+        height: 120px;
+    }
+
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-contact">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Get in Touch</h1>
+                <p class="lead mb-4">
+                    Have questions about CRIMESENSE? Want to partner with us?
+                    We'd love to hear from you and discuss how we can help improve public safety together.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-comments" style="font-size: 8rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Information -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon mx-auto">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Email Us</h4>
+                    <p class="text-muted mb-3">Get in touch via email for general inquiries</p>
+                    <a href="mailto:info@crimesense.com" class="text-accent fw-bold">info@crimesense.com</a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon mx-auto">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Call Us</h4>
+                    <p class="text-muted mb-3">Speak directly with our team</p>
+                    <a href="tel:+1234567890" class="text-accent fw-bold">+1 (234) 567-8900</a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="contact-card text-center">
+                    <div class="contact-icon mx-auto">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Visit Us</h4>
+                    <p class="text-muted mb-3">Our headquarters location</p>
+                    <address class="text-accent fw-bold mb-0">
+                        123 Innovation Drive<br>
+                        Tech City, TC 12345
+                    </address>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Form -->
+<section class="py-5" style="background: var(--color-bg-light);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="contact-card">
+                    <div class="text-center mb-4">
+                        <h2 class="display-6 fw-bold mb-3">Send us a Message</h2>
+                        <p class="text-muted">Fill out the form below and we'll get back to you within 24 hours</p>
+                    </div>
+
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="firstName" placeholder="First Name" required>
+                                    <label for="firstName">First Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="lastName" placeholder="Last Name" required>
+                                    <label for="lastName">Last Name</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" id="email" placeholder="Email Address" required>
+                                    <label for="email">Email Address</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="tel" class="form-control" id="phone" placeholder="Phone Number">
+                                    <label for="phone">Phone Number (Optional)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating">
+                            <select class="form-select" id="subject" required>
+                                <option value="">Choose a subject</option>
+                                <option value="general">General Inquiry</option>
+                                <option value="partnership">Partnership Opportunity</option>
+                                <option value="technical">Technical Support</option>
+                                <option value="data">Data Request</option>
+                                <option value="media">Media Inquiry</option>
+                            </select>
+                            <label for="subject">Subject</label>
+                        </div>
+
+                        <div class="form-floating">
+                            <textarea class="form-control" id="message" placeholder="Your message" required></textarea>
+                            <label for="message">Your Message</label>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-6 fw-bold">Frequently Asked Questions</h2>
+            <p class="lead text-muted">Quick answers to common questions</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq1">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                How accurate is your crime data?
+                            </button>
+                        </h2>
+                        <div id="collapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Our data is sourced from official government databases and law enforcement agencies,
+                                ensuring 99.9% accuracy. We update our datasets in real-time to provide the most current information.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq2">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                Is the platform free to use?
+                            </button>
+                        </h2>
+                        <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We offer both free and premium tiers. Basic crime mapping is free for all users,
+                                while advanced analytics and API access require a subscription.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faq3">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                Can law enforcement agencies partner with you?
+                            </button>
+                        </h2>
+                        <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Absolutely! We work closely with law enforcement agencies to provide custom solutions,
+                                training, and dedicated support. Contact us to discuss partnership opportunities.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

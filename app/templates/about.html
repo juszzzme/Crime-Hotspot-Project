@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}About - CRIMESENSE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-about {
+        background: var(--color-bg-gradient);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 4rem;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--color-accent);
+        border-radius: var(--border-radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: var(--spacing-lg);
+        color: white;
+        font-size: 1.5rem;
+    }
+
+    .stats-grid {
+        background: var(--color-bg-light);
+        padding: var(--spacing-3xl) 0;
+        margin: var(--spacing-3xl) 0;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: var(--spacing-xl);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--color-accent);
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-about">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">About CRIMESENSE</h1>
+                <p class="lead mb-4">
+                    We're revolutionizing public safety through advanced crime data analytics and
+                    intelligent visualization tools that empower communities and law enforcement.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-shield-alt" style="font-size: 8rem; opacity: 0.7;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Our Mission</h3>
+                    <p class="text-muted">
+                        To democratize access to crime intelligence and empower communities with
+                        data-driven insights for enhanced public safety and informed decision-making.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Our Vision</h3>
+                    <p class="text-muted">
+                        A world where crime prevention is proactive, not reactive, through the power
+                        of predictive analytics and real-time intelligence sharing.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="text-center">
+                    <div class="feature-icon mx-auto">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Our Values</h3>
+                    <p class="text-muted">
+                        Transparency, accuracy, and community safety drive everything we do.
+                        We believe in ethical data use and protecting privacy while serving the public good.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-grid">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold">Our Impact</h2>
+            <p class="lead text-muted">Making a difference through data-driven insights</p>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">1M+</span>
+                    <div class="text-muted">Crime Records Processed</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">500+</span>
+                    <div class="text-muted">Cities Analyzed</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">50+</span>
+                    <div class="text-muted">Law Enforcement Partners</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">99.9%</span>
+                    <div class="text-muted">Data Accuracy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Technology Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h2 class="display-5 fw-bold mb-4">Advanced Technology Stack</h2>
+                <p class="lead text-muted mb-4">
+                    Built with cutting-edge technologies to deliver reliable, scalable, and secure crime intelligence.
+                </p>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Machine Learning & AI Analytics</li>
+                    <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Real-time Data Processing</li>
+                    <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Interactive Geospatial Visualization</li>
+                    <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> Secure Cloud Infrastructure</li>
+                    <li class="mb-2"><i class="fas fa-check text-accent me-2"></i> API-first Architecture</li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card text-center p-3">
+                            <i class="fas fa-brain text-accent mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="fw-bold">AI/ML</h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center p-3">
+                            <i class="fas fa-map text-accent mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="fw-bold">GIS</h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center p-3">
+                            <i class="fas fa-cloud text-accent mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="fw-bold">Cloud</h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center p-3">
+                            <i class="fas fa-shield-alt text-accent mb-2" style="font-size: 2rem;"></i>
+                            <h6 class="fw-bold">Security</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
