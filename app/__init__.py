@@ -14,6 +14,12 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     csrf.init_app(app)
 
+    # Register user loader function
+    @login_manager.user_loader
+    def load_user(user_id):
+        from app.models.user import User
+        return User.query.get(int(user_id))
+
     # Register blueprints
     from app.routes.main import bp as main_bp
     app.register_blueprint(main_bp)

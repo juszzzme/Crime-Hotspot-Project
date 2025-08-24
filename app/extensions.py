@@ -10,11 +10,6 @@ login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
 csrf = CSRFProtect()
 
-# Import User model here to avoid circular imports
-from app.models.user import User
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+# User loader function will be registered in __init__.py to avoid circular imports
 
 migrate = Migrate()

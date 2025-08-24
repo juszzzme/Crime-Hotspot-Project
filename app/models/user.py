@@ -43,8 +43,8 @@ class User(UserMixin, db.Model):
     
     @password.setter
     def password(self, password):
-        # Use sha256 method instead of the default scrypt which may not be supported in all environments
-        self.password_hash = generate_password_hash(password, method='sha256')
+        # Use pbkdf2:sha256 method which is widely supported
+        self.password_hash = generate_password_hash(password, method='pbkdf2:sha256')
     
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)

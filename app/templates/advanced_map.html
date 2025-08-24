@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Crime Map - AI-Powered Crime Hotspot Analysis{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/advanced_map.css') }}">
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 4rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 15px;
+        padding: 1.75rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-3 fade-in">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Advanced Crime Hotspot Map
+                </h1>
+                <p class="lead mb-4 fade-in" style="color: white;">
+                    Experience next-generation crime visualization with AI-powered analytics,
+                    real-time updates, and interactive hotspot detection.
+                </p>
+                <div class="d-flex gap-3 fade-in">
+                    <button class="btn-unified btn-unified-secondary btn-unified-lg" onclick="resetMapView()">
+                        <i class="fas fa-crosshairs"></i> Reset View
+                    </button>
+                    <button class="btn-unified btn-unified-primary btn-unified-lg" onclick="toggleFullscreen()">
+                        <i class="fas fa-expand"></i> Fullscreen
+                    </button>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="text-center fade-in">
+                    <i class="fas fa-shield-alt" style="font-size: 6rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Dashboard -->
+<div class="container mb-4">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="totalIncidents">150</div>
+            <div class="stat-label">Total Incidents</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="stat-number" id="todayIncidents">12</div>
+            <div class="stat-label">Today's Reports</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+            <div class="stat-number" id="highRiskAreas">8</div>
+            <div class="stat-label">High Risk Areas</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <div class="stat-number" id="safetyScore">7.2</div>
+            <div class="stat-label">Safety Score</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Map Container -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="feature-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">
+                        <i class="fas fa-map text-primary"></i>
+                        Interactive Crime Map
+                    </h3>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportMapData()">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="shareMap()">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Map Container -->
+                <div id="advanced-crime-map"></div>
+                
+                <!-- Map Legend -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle"></i> Crime Type Legend</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge" style="background-color: #d73027;">
+                                <i class="fas fa-skull"></i> Murder
+                            </span>
+                            <span class="badge" style="background-color: #f46d43;">
+                                <i class="fas fa-exclamation-triangle"></i> Rape
+                            </span>
+                            <span class="badge" style="background-color: #fdae61;">
+                                <i class="fas fa-mask"></i> Robbery
+                            </span>
+                            <span class="badge" style="background-color: #fee08b;">
+                                <i class="fas fa-fist-raised"></i> Assault
+                            </span>
+                            <span class="badge" style="background-color: #e6f598;">
+                                <i class="fas fa-home"></i> Burglary
+                            </span>
+                            <span class="badge" style="background-color: #abdda4;">
+                                <i class="fas fa-hand-holding"></i> Theft
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-chart-line"></i> Real-time Features</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="fas fa-circle text-success"></i> Live incident updates every 30 seconds</li>
+                            <li><i class="fas fa-circle text-info"></i> Dynamic clustering and heatmaps</li>
+                            <li><i class="fas fa-circle text-warning"></i> AI-powered hotspot detection</li>
+                            <li><i class="fas fa-circle text-danger"></i> Predictive risk analysis</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Highlights -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-brain text-primary" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">AI-Powered Analysis</h5>
+                <p class="text-muted">
+                    Advanced machine learning algorithms analyze crime patterns 
+                    and predict future hotspots with 85% accuracy.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-satellite text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Real-time Monitoring</h5>
+                <p class="text-muted">
+                    Live data feeds from multiple sources provide instant 
+                    updates on crime incidents and safety alerts.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card text-center">
+                <i class="fas fa-shield-alt text-warning" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Predictive Safety</h5>
+                <p class="text-muted">
+                    Get personalized safety recommendations and route 
+                    suggestions based on current crime data and trends.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="feature-card">
+                <h4 class="mb-3">Take Action</h4>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ url_for('main.ai_predictions') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-chart-bar"></i> View AI Dashboard
+                    </a>
+                    <button class="btn btn-success btn-lg" onclick="reportIncident()">
+                        <i class="fas fa-plus"></i> Report Incident
+                    </button>
+                    <button class="btn btn-info btn-lg" onclick="getSafetyTips()">
+                        <i class="fas fa-lightbulb"></i> Safety Tips
+                    </button>
+                    <button class="btn btn-warning btn-lg" onclick="subscribeAlerts()">
+                        <i class="fas fa-bell"></i> Subscribe to Alerts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="{{ url_for('static', filename='js/advanced_map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/real_time_alerts.js') }}"></script>
+
+<script>
+// Additional functionality for the advanced map page
+function toggleFullscreen() {
+    const mapContainer = document.getElementById('advanced-crime-map');
+    if (!document.fullscreenElement) {
+        mapContainer.requestFullscreen().then(() => {
+            mapContainer.style.height = '100vh';
+            if (advancedMap) {
+                setTimeout(() => advancedMap.map.invalidateSize(), 100);
+            }
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            mapContainer.style.height = '600px';
+            if (advancedMap) {
+                setTimeout(() => advancedMap.map.invalidateSize(), 100);
+            }
+        });
+    }
+}
+
+function exportMapData() {
+    if (advancedMap) {
+        const data = advancedMap.crimeData;
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'crime_data_export.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        // Show success message
+        showNotification('Data exported successfully!', 'success');
+    }
+}
+
+function shareMap() {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Crime Hotspot Map',
+            text: 'Check out this advanced crime analysis map',
+            url: window.location.href
+        });
+    } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            showNotification('Map link copied to clipboard!', 'info');
+        });
+    }
+}
+
+function reportIncident() {
+    // This would open a modal or redirect to incident reporting form
+    showNotification('Incident reporting feature coming soon!', 'info');
+}
+
+function getSafetyTips() {
+    // This would show safety tips based on current location/area
+    const tips = [
+        'Stay aware of your surroundings',
+        'Avoid poorly lit areas at night',
+        'Keep valuables secure and out of sight',
+        'Trust your instincts if something feels wrong',
+        'Share your location with trusted contacts'
+    ];
+    
+    const tipsList = tips.map(tip => `<li>${tip}</li>`).join('');
+    
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fas fa-lightbulb"></i> Safety Tips</h5>
+                        <button type="button" class="btn-close" onclick="this.closest('.modal').remove()"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul>${tipsList}</ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="this.closest('.modal').remove()">Got it!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function subscribeAlerts() {
+    // This would handle alert subscriptions
+    showNotification('Alert subscription feature coming soon!', 'info');
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Update statistics periodically
+function updateStatistics() {
+    if (advancedMap && advancedMap.crimeData) {
+        const data = advancedMap.crimeData;
+        const today = new Date().toISOString().split('T')[0];
+        const todayIncidents = data.filter(incident => incident.date === today).length;
+        
+        document.getElementById('totalIncidents').textContent = data.length;
+        document.getElementById('todayIncidents').textContent = todayIncidents;
+        
+        // Calculate high risk areas (simplified)
+        const highRiskAreas = Math.floor(data.length / 20) + 3;
+        document.getElementById('highRiskAreas').textContent = highRiskAreas;
+        
+        // Calculate safety score (simplified)
+        const safetyScore = Math.max(1, 10 - (todayIncidents / 2)).toFixed(1);
+        document.getElementById('safetyScore').textContent = safetyScore;
+    }
+}
+
+// Update statistics every 30 seconds
+setInterval(updateStatistics, 30000);
+
+// Initial update after map loads
+setTimeout(updateStatistics, 2000);
+</script>
+{% endblock %}

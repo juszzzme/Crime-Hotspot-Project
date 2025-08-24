@@ -1,0 +1,690 @@
+{% extends "base.html" %}
+
+{% block title %}Crime Prevention & Safety Tips - CrimeSense{% endblock %}
+
+{% block extra_css %}
+<style>
+    .safety-tips-section {
+        padding: 4rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        -webkit-background-clip: padding-box;
+        -moz-background-clip: padding-box;
+        background-clip: padding-box;
+    }
+    
+    .safety-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        border: 1px solid #f1f3f4;
+        position: relative;
+    }
+    
+    .safety-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .safety-card .card-body {
+        padding: 1.5rem 3.5rem 1.5rem 3.5rem;  /* Increased side padding by 0.5rem on each side */
+        position: relative;
+    }
+    
+    .safety-card .card-title {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        font-size: 1.3rem;
+    }
+    
+    .safety-card .card-text ul {
+        margin: 0;
+    }
+    
+    .safety-card .card-text li {
+        color: #495057;
+        margin-bottom: 0.75rem;
+        padding-left: 2.5rem;  /* Increased left padding by 0.5rem */
+        line-height: 1.6;
+        font-size: 0.95rem;
+        position: relative;
+    }
+    
+    .safety-category {
+        position: absolute;
+        top: -12px;
+        left: 20px;
+        display: inline-block;
+        padding: 0.5rem 1.2rem;
+        border-radius: 25px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
+    
+    .safety-category-crime { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+    .safety-category-financial { background: linear-gradient(135deg, #fd7e14, #e55a00); color: white; }
+    .safety-category-online { background: linear-gradient(135deg, #6a5acd, #483d8b); color: #ffffff; }
+    .safety-category-women { background: linear-gradient(135deg, #e83e8c, #d91a72); color: white; }
+    .safety-category-transport { background: linear-gradient(135deg, #198754, #146c43); color: white; }
+    .safety-category-workplace { background: linear-gradient(135deg, #0d6efd, #084298); color: white; }
+    .safety-category-home { background: linear-gradient(135deg, #20c997, #17a085); color: white; }
+    .safety-category-emergency { background: linear-gradient(135deg, #dc3545, #b02a37); color: white; }
+    
+    .safety-tips-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        position: relative;
+    }
+    
+    .safety-tips-header::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(135deg, #198754, #20c997);
+        border-radius: 2px;
+    }
+    
+    .safety-tips-header i {
+        font-size: 3.5rem;
+        background: linear-gradient(135deg, #198754, #20c997);
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+    
+    .safety-tips-header h1 {
+        font-weight: 800;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+        font-size: 2.8rem;
+    }
+    
+    .safety-tips-header p {
+        font-size: 1.2rem;
+        color: #6c757d;
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    
+    .emergency-sidebar {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        border: 1px solid #f1f3f4;
+        position: sticky;
+        top: 20px;
+    }
+    
+    .emergency-sidebar h4 {
+        color: #dc3545;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .emergency-contact-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;  
+        margin: 0 0 0.75rem 0.75rem;  
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .emergency-contact-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .emergency-contact-item i {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        font-size: 1.1rem;
+    }
+    
+    .emergency-contact-item .contact-details {
+        flex-grow: 1;
+    }
+    
+    .emergency-contact-item .contact-name {
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        color: #2c3e50;
+    }
+    
+    .emergency-contact-item .contact-number {
+        color: #dc3545;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+    
+    .safety-tip-icon {
+        font-size: 1.2rem;
+        margin-right: 0.75rem;
+        color: #198754;
+        width: 24px;
+        text-align: center;
+        display: inline-block;
+    }
+    
+    .safety-apps-section {
+        background: linear-gradient(135deg, #6f42c1, #59359a);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(111, 66, 193, 0.3);
+    }
+    
+    .safety-apps-section h5 {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .app-item {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .app-item:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+    }
+    
+    .safety-checklist {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem 2rem;  
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin: 1.5rem 0 0 0.75rem;  
+    }
+    
+    .safety-checklist h5 {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: #2c3e50;
+    }
+    
+    .form-check {
+        padding: 0.75rem;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .form-check:hover {
+        background: #e9ecef;
+    }
+    
+    .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    
+    .quick-tip-box {
+        background: linear-gradient(135deg, #17a2b8, #138496);
+        color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quick-tip-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #20c997, #17a085);
+    }
+    
+    .quick-tip-box h6 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .quick-tip-box i {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .stats-highlight {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        color: #721c24;
+        font-size: 0.9rem;
+        font-style: italic;
+    }
+    
+    @media (max-width: 767.98px) {
+        .safety-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .safety-tips-header h1 {
+            font-size: 2.2rem;
+        }
+        
+        .emergency-sidebar {
+            position: relative;
+            top: auto;
+        }
+    }
+    
+    .safety-card .card-footer {
+        background: transparent;
+        border-top: none;
+        padding-top: 0;
+    }
+    
+    .emergency-contacts-sidebar {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .emergency-contacts-sidebar h4 {
+        color: #dc3545;
+        margin-bottom: 1.25rem;
+        font-weight: 700;
+    }
+    
+    /* Override duplicate styles */
+    .safety-category-home {
+        background-color: #e3f2fd;
+        color: #0d6efd;
+    }
+    
+    .safety-category-transport {
+        background-color: #e8f5e9;
+        color: #198754;
+    }
+    
+    .safety-category-online {
+        background-color: #f3e5f6;
+        color: #6f42c1;
+    }
+    
+    .safety-category-emergency {
+        background-color: #fce4ec;
+        color: #d63384;
+    }
+    
+    .stats-highlight {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-left: 4px solid #198754;
+        padding: 0.75rem 1rem;
+        margin: 1rem 0;
+        border-radius: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .safety-tip-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .safety-tip-list li {
+        margin-bottom: 0.75rem;
+        position: relative;
+        padding-left: 3.2rem;  /* Increased from 2.2rem to 3.2rem */
+        line-height: 1.5;
+    }
+
+    .safety-tip-list li i {
+        position: absolute;
+        left: 0.25rem;
+        top: 0.25rem;
+        color: #198754;
+        font-size: 1.1rem;
+    }
+    
+    /* List styling */
+    .list-unstyled {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .list-unstyled li {
+        margin-bottom: 1rem;    /* Increased bottom margin for better spacing */
+        position: relative;
+        padding-left: 3.8rem;   /* Increased from 2.8rem to 3.8rem */
+        line-height: 1.7;       /* Slightly increased line height for better readability */
+        min-height: 1.8em;      /* Ensure minimum height for the line */
+        text-align: left;       /* Ensure text is properly aligned */
+    }
+    
+    .list-unstyled li i {
+        position: absolute;
+        left: 0.5rem;          /* Moved icon slightly to the right */
+        top: 0.3rem;           /* Better vertical alignment */
+        color: #198754;
+        font-size: 1.1rem;
+        width: 1.5rem;         /* Fixed width for consistent spacing */
+        text-align: center;     /* Center the icon in its container */
+    }
+    
+    /* Update heading colors */
+    .card-title {
+        color: #ffffff !important;
+        margin-bottom: 1.25rem;
+    }
+    
+    .emergency-contacts-sidebar h4 {
+        color: #ffffff !important;
+    }
+    
+    .safety-category {
+        color: #ffffff !important;
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        display: inline-block;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="safety-tips-section">
+    <div class="container">
+        <div class="safety-tips-header">
+            <i class="fas fa-shield-alt"></i>
+            <h1>Crime Prevention & Safety Tips</h1>
+            <p>Your personal safety is our priority. Learn essential tips and strategies to protect yourself, your family, and your property in various situations.</p>
+        </div>
+        
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="row">
+                    <!-- Home Security -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card safety-card h-100">
+                            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top" alt="Home Security">
+                            <div class="card-body">
+                                <span class="safety-category safety-category-home">Home Security</span>
+                                <h3 class="card-title">Securing Your Home</h3>
+                                <div class="card-text">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Install quality locks on all doors and windows</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Use timers on lights when away from home</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Don't hide spare keys in obvious places</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Keep bushes and trees trimmed near windows</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Consider a home security system</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Personal Safety -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card safety-card h-100">
+                            <img src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top" alt="Personal Safety">
+                            <div class="card-body">
+                                <span class="safety-category safety-category-transport">Personal Safety</span>
+                                <h3 class="card-title">Personal Safety Tips</h3>
+                                <div class="card-text">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Stay alert and aware of your surroundings</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Avoid walking alone at night in unfamiliar areas</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Keep valuables out of sight in your vehicle</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Have your keys ready when approaching your car or home</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Trust your instincts - if something feels wrong, leave</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Online Safety -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card safety-card h-100">
+                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top" alt="Online Safety">
+                            <div class="card-body">
+                                <span class="safety-category safety-category-online">Digital Safety</span>
+                                <h3 class="card-title">Staying Safe Online</h3>
+                                <div class="card-text">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Use strong, unique passwords for all accounts</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Enable two-factor authentication where available</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Be cautious about sharing personal information online</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Keep your devices and software updated</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Learn to recognize phishing attempts</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Emergency Preparedness -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card safety-card h-100">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1376&q=80" class="card-img-top" alt="Emergency Preparedness">
+                            <div class="card-body">
+                                <span class="safety-category safety-category-emergency">Emergency</span>
+                                <h3 class="card-title">Emergency Preparedness</h3>
+                                <div class="card-text">
+                                    <ul class="list-unstyled">
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Create a family emergency plan</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Keep emergency contact numbers handy</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Know the emergency exits in buildings you frequent</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Learn basic first aid and CPR</li>
+                                        <li class="mb-2"><i class="fas fa-check-circle safety-tip-icon"></i> Keep an emergency kit with essential supplies</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar with Emergency Contacts -->
+            <div class="col-lg-4">
+                <div class="emergency-contacts-sidebar">
+                    <h4><i class="fas fa-phone-alt me-2"></i>Emergency Contacts</h4>
+                    
+                    <div class="emergency-contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div class="contact-details">
+                            <div class="contact-name">Police</div>
+                            <div class="contact-number phone-number">100</div>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact-item">
+                        <i class="fas fa-ambulance"></i>
+                        <div class="contact-details">
+                            <div class="contact-name">Ambulance</div>
+                            <div class="contact-number phone-number">108 or 102</div>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact-item">
+                        <i class="fas fa-fire"></i>
+                        <div class="contact-details">
+                            <div class="contact-name">Fire Department</div>
+                            <div class="contact-number phone-number">101</div>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact-item">
+                        <i class="fas fa-female"></i>
+                        <div class="contact-details">
+                            <div class="contact-name">Women's Helpline</div>
+                            <div class="contact-number phone-number">1091</div>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact-item">
+                        <i class="fas fa-child"></i>
+                        <div class="contact-details">
+                            <div class="contact-name">Child Helpline</div>
+                            <div class="contact-number phone-number">1098</div>
+                        </div>
+                    </div>
+                    
+                    <div class="emergency-contact-item">
+                        <i class="fas fa-globe-americas"></i>
+                        <div class="contact-details">
+                            <div class="contact-name">Disaster Management</div>
+                            <div class="contact-number phone-number">011-1078</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Download Safety Apps</h5>
+                        <p class="card-text small">Enhance your safety with these recommended apps:</p>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-mobile-alt me-2 text-primary"></i> <strong>Nirbhaya:</strong> Women's safety app with SOS feature</li>
+                            <li class="mb-2"><i class="fas fa-mobile-alt me-2 text-primary"></i> <strong>Himmat:</strong> Delhi Police women's safety app</li>
+                            <li class="mb-2"><i class="fas fa-mobile-alt me-2 text-primary"></i> <strong>mParivahan:</strong> Emergency and vehicle-related services</li>
+                            <li class="mb-2"><i class="fas fa-mobile-alt me-2 text-primary"></i> <strong>112 India:</strong> Pan-India single emergency number</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">Safety Checklist</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check1">
+                            <label class="form-check-label small" for="check1">I have emergency contacts saved in my phone</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check2">
+                            <label class="form-check-label small" for="check2">I've shared my live location with trusted contacts</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check3">
+                            <label class="form-check-label small" for="check3">I know the emergency exits in my workplace</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="check4">
+                            <label class="form-check-label small" for="check4">I have a basic first aid kit at home</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="check5">
+                            <label class="form-check-label small" for="check5">I've reviewed my online privacy settings</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    'use strict';
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize any interactive elements here
+        
+        // Handle all checkboxes
+        const allCheckboxes = document.querySelectorAll('.form-check-input, .safety-checklist input[type="checkbox"]');
+        
+        allCheckboxes.forEach(function(checkbox) {
+            const storageKey = checkbox.classList.contains('safety-checklist') ? 
+                `safetyTip_${checkbox.id}` : 
+                checkbox.id;
+                
+            // Load saved state
+            const savedState = localStorage.getItem(storageKey);
+            if (savedState === 'true') {
+                checkbox.checked = true;
+            }
+            
+            // Save state on change
+            checkbox.addEventListener('change', function() {
+                localStorage.setItem(storageKey, this.checked);
+            });
+        });
+        
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Update URL without adding to history
+                    if (history.pushState) {
+                        history.pushState(null, null, targetId);
+                    } else {
+                        location.hash = targetId;
+                    }
+                }
+            });
+        });
+        
+        // Make phone numbers clickable on mobile
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+            document.querySelectorAll('.phone-number').forEach(function(phoneNumber) {
+                const number = phoneNumber.textContent.trim();
+                if (number) {
+                    phoneNumber.innerHTML = `<a href="tel:${number}" class="text-decoration-none">${number}</a>`;
+                }
+            });
+        }
+    });
+})();
+</script>
+{% endblock %}

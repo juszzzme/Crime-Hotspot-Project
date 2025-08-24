@@ -164,56 +164,91 @@
             </div>
             <h1>Welcome Back</h1>
             <p>Sign in to your CRIMESENSE account</p>
+            <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 12px; margin: 16px 0; font-size: 0.9em;">
+                <strong>Demo Credentials:</strong><br>
+                Email: admin@crimesense.com<br>
+                Password: admin123
+            </div>
         </div>
 
-        <form method="POST" action="/login" id="loginForm">
+        <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+            {{ form.hidden_tag() }}
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" class="form-control" id="email" name="email" 
-                       placeholder="Enter your email address" required>
+                {{ form.email(class="form-control", placeholder="Enter your email address") }}
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" name="password" 
-                       placeholder="Enter your password" required>
+                {{ form.password(class="form-control", placeholder="Enter your password") }}
             </div>
 
             <div class="remember-forgot">
                 <div class="checkbox-group">
-                    <input type="checkbox" id="remember" name="remember">
+                    {{ form.remember(id="remember") }}
                     <label for="remember">Remember me</label>
                 </div>
                 <a href="#" class="forgot-link">Forgot password?</a>
             </div>
 
-            <button type="submit" class="btn-auth">
-                Sign In
-            </button>
+            {{ form.submit(class="btn-auth") }}
         </form>
 
         <div class="auth-footer">
-            <p>Don't have an account? <a href="{{ url_for('auth.signup') if url_for else '/signup' }}">Sign up</a></p>
+            <p>Don't have an account? <a href="{{ url_for('auth.signup') }}">Sign up</a></p>
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script>
+    // Simple form validation - let Flask handle the submission
     document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Simple demo - in real app this would submit to server
-        const email = document.getElementById('email').value;
+        const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-        
-        if (email && password) {
-            alert('Login functionality would be implemented here. Redirecting to home page...');
-            window.location.href = '{{ url_for('main.index') if url_for else '/' }}';
-        } else {
+
+        if (!email || !password) {
+            e.preventDefault();
             alert('Please fill in all fields.');
+            return false;
         }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('Please enter a valid email address.');
+            return false;
+        }
+
+        // Let the form submit normally to Flask
+        return true;
+    });
+
+    // Add password visibility toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.createElement('button');
+        togglePassword.type = 'button';
+        togglePassword.innerHTML = '<i class="fas fa-eye"></i>';
+        togglePassword.style.position = 'absolute';
+        togglePassword.style.right = '10px';
+        togglePassword.style.top = '50%';
+        togglePassword.style.transform = 'translateY(-50%)';
+        togglePassword.style.border = 'none';
+        togglePassword.style.background = 'transparent';
+        togglePassword.style.cursor = 'pointer';
+        togglePassword.style.color = 'var(--color-text-light)';
+        
+        passwordInput.parentElement.style.position = 'relative';
+        passwordInput.parentElement.appendChild(togglePassword);
+
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
     });
 </script>
-{% endblock %}
 {% endblock %}

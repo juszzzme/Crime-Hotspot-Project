@@ -32,6 +32,11 @@ class Config:
     # Pagination
     ITEMS_PER_PAGE = 20
 
+    # Server configuration for URL building
+    SERVER_NAME = os.environ.get('SERVER_NAME') or None
+    APPLICATION_ROOT = '/'
+    PREFERRED_URL_SCHEME = 'http'
+
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_ECHO = True

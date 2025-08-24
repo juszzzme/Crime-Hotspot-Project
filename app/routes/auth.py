@@ -12,18 +12,76 @@ bp = Blueprint('auth', __name__)
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-        
+
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        
-        if user and user.verify_password(form.password.data):
+        email = form.email.data.lower().strip()
+        password = form.password.data
+
+        print(f"[AUTH] Login attempt: {email}")  # Debug logging
+
+        # Demo credentials for immediate testing
+        demo_credentials = {
+            'admin@crimesense.com': 'admin123',
+            'user@crimesense.com': 'user123',
+            'demo@crimesense.com': 'demo123'
+        }
+
+        # Check demo credentials first
+        if email in demo_credentials and password == demo_credentials[email]:
+            print(f"[SUCCESS] Demo login successful for {email}")  # Debug logging
+
+            # Find or create user
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                # Create user on the fly for demo
+                user = User(
+                    email=email,
+                    username=email.split('@')[0],
+                    first_name='Demo',
+                    last_name='User',
+                    is_active=True,
+                    is_admin=(email == 'admin@crimesense.com'),
+                    email_confirmed=True
+                )
+                user.password = password  # This will hash it
+                db.session.add(user)
+                db.session.commit()
+                print(f"[SUCCESS] Created new demo user: {email}")
+
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
+            print(f"[REDIRECT] Redirecting to: {next_page or url_for('main.index')}")  # Debug logging
             return redirect(next_page or url_for('main.index'))
-            
+
+        # Fallback to database verification
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            print(f"[SUCCESS] User found in database: {user.email}, Active: {user.is_active}")  # Debug logging
+
+            # Direct password verification using werkzeug
+            from werkzeug.security import check_password_hash
+            password_valid = check_password_hash(user.password_hash, password)
+
+            print(f"[AUTH] Database password verification: {password_valid}")  # Debug logging
+
+            if password_valid and user.is_active:
+                print(f"[SUCCESS] Database login successful for {user.email}")  # Debug logging
+                login_user(user, remember=form.remember.data)
+                next_page = request.args.get('next')
+                print(f"[REDIRECT] Redirecting to: {next_page or url_for('main.index')}")  # Debug logging
+                return redirect(next_page or url_for('main.index'))
+            else:
+                print(f"[ERROR] Database login failed - Password valid: {password_valid}, Active: {user.is_active}")  # Debug logging
+        else:
+            print(f"[ERROR] User not found in database: {email}")  # Debug logging
+
         flash('Invalid email or password. Please try again.', 'danger')
-        
+    else:
+        if form.errors:
+            print(f"[ERROR] Form validation errors: {form.errors}")  # Debug logging
+
     return render_template('auth/login.html', form=form, now=datetime.utcnow())
 
 @bp.route('/signup', methods=['GET', 'POST'])

@@ -6,9 +6,29 @@ import json
 import os
 import csv
 import io
+import numpy as np
 from werkzeug.security import generate_password_hash
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from src.models.crime_prediction import CrimePredictionEngine
 
 bp = Blueprint('api', __name__)
+
+# Initialize prediction engine
+prediction_engine = None
+
+def get_prediction_engine():
+    """Get or initialize the prediction engine."""
+    global prediction_engine
+    if prediction_engine is None:
+        try:
+            prediction_engine = CrimePredictionEngine()
+            # Train models on startup
+            prediction_engine.train_prediction_models()
+        except Exception as e:
+            current_app.logger.error(f"Failed to initialize prediction engine: {e}")
+            prediction_engine = None
+    return prediction_engine
 
 def admin_required(f):
     @wraps(f)
@@ -17,6 +37,50 @@ def admin_required(f):
             return jsonify({"error": "Admin access required"}), 403
         return f(*args, **kwargs)
     return decorated_function
+
+@bp.route('/crime-data', methods=['GET'])
+@login_required
+def get_crime_data():
+    """Get crime data with optional filtering."""
+    try:
+        # Get query parameters
+        state = request.args.get('state')
+        city = request.args.get('city')
+        crime_type = request.args.get('crime_type')
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        limit = int(request.args.get('limit', 100))
+
+        # Generate sample crime data (replace with actual database query)
+        from app.routes.main import generate_sample_crime_data
+        sample_data = generate_sample_crime_data()
+
+        # Apply filters if provided
+        filtered_data = sample_data
+        if state:
+            filtered_data = [d for d in filtered_data if state.lower() in d.get('location', '').lower()]
+        if crime_type:
+            filtered_data = [d for d in filtered_data if d.get('crime_type') == crime_type]
+
+        # Limit results
+        filtered_data = filtered_data[:limit]
+
+        return jsonify({
+            'success': True,
+            'data': filtered_data,
+            'total': len(filtered_data),
+            'filters': {
+                'state': state,
+                'city': city,
+                'crime_type': crime_type,
+                'start_date': start_date,
+                'end_date': end_date
+            }
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Error fetching crime data: {str(e)}")
+        return jsonify({"error": "Failed to fetch crime data"}), 500
 
 @bp.route('/states', methods=['GET'])
 def get_states():
@@ -173,3 +237,35 @@ def get_safe_route():
     except Exception as e:
         current_app.logger.error(f"Error calculating safe route: {str(e)}")
         return jsonify({"error": "Failed to calculate safe route"}), 500
+
+# ====================================
+# AI PREDICTION ENDPOINTS
+# ====================================
+# Clean slate - new implementation will go here
+
+
+
+def get_safety_recommendations(risk_level: str) -> list:
+    """Get safety recommendations based on risk level."""
+    recommendations = {
+        'Low': [
+            'Maintain current security measures',
+            'Continue community policing programs',
+            'Regular safety awareness campaigns'
+        ],
+        'Medium': [
+            'Increase police patrols during peak hours',
+            'Improve street lighting in vulnerable areas',
+            'Establish neighborhood watch programs',
+            'Install CCTV cameras at key locations'
+        ],
+        'High': [
+            'Deploy additional police personnel',
+            'Implement emergency response protocols',
+            'Conduct intensive community outreach',
+            'Coordinate with local authorities for immediate action',
+            'Consider temporary security measures'
+        ]
+    }
+
+    return recommendations.get(risk_level, ['Monitor situation closely'])

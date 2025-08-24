@@ -1,0 +1,642 @@
+{% extends "base.html" %}
+
+{% block title %}AI-Powered Crime Predictions - Crime Hotspot Project{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #3a7bd5;
+        --primary-dark: #1e3c72;
+        --secondary-color: #00d2ff;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --dark-color: #2c3e50;
+        --light-color: #f8f9fc;
+        --border-radius: 12px;
+        --box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    body {
+        background-color: #f5f7fa;
+        font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        color: #2c3e50;
+    }
+    
+    .ai-dashboard-body {
+        background: linear-gradient(135deg, #f0f4f8 0%, #e0e6ed 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .main-container {
+        background: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 2.5rem;
+        margin: 2rem auto;
+        max-width: 1400px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-header {
+        margin-bottom: 3rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+        border-radius: var(--border-radius);
+        color: white;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-subtitle {
+        font-size: 1.1rem;
+        color: #6c757d;
+        font-weight: 400;
+    }
+    
+    .card {
+        border: none;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+        background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+    }
+    
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid #e3e6f0;
+        padding: 1.25rem 1.5rem;
+        font-weight: 600;
+        color: #4e73df;
+        border-radius: 10px 10px 0 0 !important;
+    }
+    
+    .safety-score {
+        font-size: 3.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    
+    .score-excellent {
+        color: #1cc88a;
+    }
+    
+    .score-good {
+        color: #36b9cc;
+    }
+    
+    .score-moderate {
+        color: #f6c23e;
+    }
+    
+    .score-poor {
+        color: #e74a3b;
+    }
+    
+    .progress {
+        height: 1.2rem;
+        border-radius: 10px;
+        margin: 1.5rem 0;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(90deg, #4e73df 0%, #224abe 100%);
+    }
+    
+    .safety-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    .safety-factor {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 10px;
+        background-color: #f8f9fc;
+        transition: all 0.3s ease;
+    }
+    
+    .safety-factor:hover {
+        background-color: #eaecf4;
+    }
+    
+    .safety-factor i {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+        color: #4e73df;
+    }
+    
+    .safety-factor-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #5a5c69;
+        margin-bottom: 0.25rem;
+    }
+    
+    .safety-factor-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .map-container {
+        height: 400px;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .route-option {
+        padding: 1rem;
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .route-option:hover {
+        border-color: #4e73df;
+        background-color: #f8f9ff;
+    }
+    
+    .route-option.active {
+        border-color: #4e73df;
+        background-color: #f0f3ff;
+    }
+    
+    .route-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .route-time {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .route-distance {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .route-safety {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .safety-high {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+    
+    .safety-medium {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+    
+    .safety-low {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 50px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(78, 115, 223, 0.3);
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid #d1d3e2;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #bac8f3;
+        box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .nav-pills .nav-link {
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+    }
+    
+    .tab-content {
+        padding: 1.5rem 0;
+    }
+    
+    .time-selector {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .time-option {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem;
+        border: 1px solid #e3e6f0;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .time-option:hover, .time-option.active {
+        background-color: #4e73df;
+        color: white;
+        border-color: #4e73df;
+    }
+    
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 1.5rem;
+        }
+        
+        .dashboard-title {
+            font-size: 1.8rem;
+        }
+        
+        .safety-score {
+            font-size: 2.5rem;
+        }
+        
+        .map-container {
+            height: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map (placeholder - would integrate with Google Maps/Mapbox in production)
+        function initMap() {
+            console.log('Initializing map...');
+            // Map initialization code would go here
+        }
+        
+        // Route option selection
+        const routeOptions = document.querySelectorAll('.route-option');
+        routeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                routeOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Time option selection
+        const timeOptions = document.querySelectorAll('.time-option');
+        timeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                timeOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show/hide date-time picker based on selection
+                const selectedOption = this.textContent.trim();
+                // Implementation for date-time picker would go here
+            });
+        });
+        
+        // Find route button click handler
+        const findRouteBtn = document.getElementById('findRouteBtn');
+        if (findRouteBtn) {
+            findRouteBtn.addEventListener('click', function() {
+                const startLocation = document.getElementById('startLocation').value;
+                const destination = document.getElementById('destination').value;
+                
+                if (!startLocation || !destination) {
+                    alert('Please enter both starting point and destination');
+                    return;
+                }
+                
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Analyzing routes...';
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // Reset button state
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    
+                    // Show success message
+                    const alertHTML = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Found 3 safe routes to your destination!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                    
+                    // Add alert above the map
+                    const mapContainer = document.querySelector('.map-container');
+                    if (mapContainer) {
+                        mapContainer.innerHTML = `
+                            <div class="position-relative">
+                                ${alertHTML}
+                                <div class="map-placeholder bg-light d-flex justify-content-center align-items-center" style="height: 400px; border-radius: 10px;">
+                                    <div class="text-center p-4">
+                                        <i class="fas fa-route fa-3x text-primary mb-3"></i>
+                                        <h5>Route from ${startLocation} to ${destination}</h5>
+                                        <p class="text-muted">Safest route displayed on the map</p>
+                                        <div class="d-flex justify-content-center gap-3 mt-3">
+                                            <span class="badge bg-primary"><i class="fas fa-clock me-1"></i> 12 min</span>
+                                            <span class="badge bg-success"><i class="fas fa-road me-1"></i> 3.2 km</span>
+                                            <span class="badge bg-info text-dark"><i class="fas fa-shield-alt me-1"></i> Safe</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Scroll to map
+                    mapContainer.scrollIntoView({ behavior: 'smooth' });
+                    
+                }, 1500);
+            });
+        }
+        
+        // Initialize the map when the page loads
+        initMap();
+    });
+    
+    // Function to calculate safety score based on various factors
+    function calculateSafetyScore(locationData, timeData, historicalCrimeData) {
+        // This would be implemented with actual data analysis
+        // For now, return a random score between 70-95
+        return Math.floor(Math.random() * 26) + 70;
+    }
+    
+    // Function to get safety level based on score
+    function getSafetyLevel(score) {
+        if (score >= 80) return 'high';
+        if (score >= 60) return 'medium';
+        return 'low';
+    }
+</script>
+
+<!-- Include Mapbox GL JS for maps (example) -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+
+<!-- Include Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+
+<!-- Include Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="ai-dashboard-body">
+    <div class="main-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">AI-Powered Safety Analysis</h1>
+            <p class="dashboard-subtitle text-white">Get personalized safety scores and optimal routes based on real-time crime data</p>
+        </div>
+        
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- ... existing HTML code ... -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-route me-2"></i>Route Planner
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label">Starting Point</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    <input type="text" class="form-control" placeholder="Enter starting location" id="startLocation">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Destination</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-flag"></i></span>
+                                    <input type="text" class="form-control" placeholder="Enter destination" id="destination">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="time-selector">
+                            <div class="time-option active">Now</div>
+                            <div class="time-option">Depart at</div>
+                            <div class="time-option">Arrive by</div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button class="btn btn-primary" id="findRouteBtn">
+                                <i class="fas fa-search-location me-2"></i>Find Safest Route
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map Container -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-map-marked-alt me-2"></i>Route Map
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="trafficLayerToggle" checked>
+                            <label class="form-check-label small" for="trafficLayerToggle">Show Traffic</label>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="map-container" id="map">
+                            <!-- Map will be rendered here -->
+                            <div class="d-flex justify-content-center align-items-center h-100 bg-light">
+                                <div class="text-center p-4">
+                                    <i class="fas fa-map-marked-alt fa-3x text-muted mb-3"></i>
+                                    <h5>Enter locations to see the safest route</h5>
+                                    <p class="text-muted">Our AI will analyze crime data and suggest the safest path</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Safety Score Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-shield-alt me-2"></i>Your Safety Score
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="safety-score score-good">
+                            84<span class="h4">/100</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 84%" 
+                                 aria-valuenow="84" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <p class="text-muted mb-4">Good - You're in a relatively safe area</p>
+                        
+                        <div class="safety-indicator">
+                            <div class="safety-factor">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <div class="safety-factor-label">Location</div>
+                                <div class="safety-factor-value">85%</div>
+                            </div>
+                            <div class="safety-factor">
+                                <i class="far fa-clock"></i>
+                                <div class="safety-factor-label">Time</div>
+                                <div class="safety-factor-value">78%</div>
+                            </div>
+                            <div class="safety-factor">
+                                <i class="fas fa-users"></i>
+                                <div class="safety-factor-label">Crowd</div>
+                                <div class="safety-factor-value">92%</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-outline-primary w-100 mt-2">
+                            <i class="fas fa-info-circle me-2"></i>View Safety Tips
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Route Options -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-route me-2"></i>Route Options
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label small text-uppercase fw-bold text-muted">PREFERRED ROUTE</label>
+                            <div class="route-option active">
+                                <div class="route-details">
+                                    <div>
+                                        <div class="route-time">12 min (3.2 km)</div>
+                                        <div class="route-distance">via MG Road • Less traffic</div>
+                                    </div>
+                                    <span class="route-safety safety-high">Safe</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label small text-uppercase fw-bold text-muted">ALTERNATIVE ROUTES</label>
+                            <div class="route-option">
+                                <div class="route-details">
+                                    <div>
+                                        <div class="route-time">10 min (2.8 km)</div>
+                                        <div class="route-distance">via Market Street • More crowded</div>
+                                    </div>
+                                    <span class="route-safety safety-medium">Moderate</span>
+                                </div>
+                            </div>
+                            
+                            <div class="route-option">
+                                <div class="route-details">
+                                    <div>
+                                        <div class="route-time">15 min (3.5 km)</div>
+                                        <div class="route-distance">via Park Avenue • Well-lit</div>
+                                    </div>
+                                    <span class="route-safety safety-high">Safe</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button class="btn btn-outline-primary">
+                                <i class="fas fa-directions me-2"></i>Start Navigation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coming Soon Features -->
+        <div class="mt-5 pt-4">
+            <h3 class="mb-4">Coming Soon</h3>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h4>Real-time Alerts</h4>
+                        <p>Get instant notifications about incidents and safety concerns in your area.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Crime Trends</h4>
+                        <p>View historical crime data and trends for better planning and awareness.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Community Watch</h4>
+                        <p>Connect with neighbors and local authorities for enhanced safety.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Custom JavaScript -->
+<script src="{{ url_for('static', filename='js/ai_predictions.js') }}"></script>
+{% endblock %}

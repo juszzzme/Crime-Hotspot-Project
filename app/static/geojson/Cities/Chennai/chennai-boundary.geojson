@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chennai",
+        "state": "Tamil Nadu",
+        "population": 4646732,
+        "area_km2": 426.7
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [80.1500, 13.2000],
+            [80.3500, 13.2000],
+            [80.3500, 12.9000],
+            [80.1500, 12.9000],
+            [80.1500, 13.2000]
+          ]
+        ]
+      }
+    }
+  ]
+}

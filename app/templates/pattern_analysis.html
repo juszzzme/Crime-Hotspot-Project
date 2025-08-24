@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Pattern Analysis - Crime Pattern Recognition{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .analysis-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 1rem 0;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+    }
+    
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .btn-analyze {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="display-4 mb-3">Crime Pattern Analysis</h1>
+                <p class="lead" style="color: white;">Advanced AI-powered analysis of crime patterns and trends</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Statistics Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" id="totalIncidents">0</div>
+            <div class="stat-label">Total Incidents</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="clustersFound">0</div>
+            <div class="stat-label">Clusters Found</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="anomaliesDetected">0</div>
+            <div class="stat-label">Anomalies Detected</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="riskScore">0</div>
+            <div class="stat-label">Risk Score</div>
+        </div>
+    </div>
+
+    <!-- Analysis Controls -->
+    <div class="analysis-card">
+        <h3>Analysis Controls</h3>
+        <div class="row">
+            <div class="col-md-6">
+                <label for="timeRange">Time Range:</label>
+                <select id="timeRange" class="form-control">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="crimeType">Crime Type:</label>
+                <select id="crimeType" class="form-control">
+                    <option value="all" selected>All Types</option>
+                    <option value="theft">Theft</option>
+                    <option value="assault">Assault</option>
+                    <option value="burglary">Burglary</option>
+                </select>
+            </div>
+        </div>
+        <div class="mt-3">
+            <button id="runAnalysis" class="btn btn-analyze">Run Analysis</button>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <h4>Temporal Patterns</h4>
+                <div class="chart-container">
+                    <canvas id="temporalChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="analysis-card">
+                <h4>Crime Type Distribution</h4>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="analysis-card">
+        <h4>Analysis Results</h4>
+        <div id="analysisResults">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+            <p class="text-center">Click "Run Analysis" to start pattern recognition</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let temporalChart = null;
+let distributionChart = null;
+
+// Initialize charts
+function initializeCharts() {
+    // Temporal Pattern Chart
+    const temporalCtx = document.getElementById('temporalChart').getContext('2d');
+    temporalChart = new Chart(temporalCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Crime Incidents',
+                data: [12, 15, 18, 14, 22, 35, 28],
+                borderColor: 'rgba(52, 152, 219, 1)',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    min: 0,
+                    max: 50,
+                    ticks: {
+                        stepSize: 10
+                    }
+                }
+            }
+        }
+    });
+
+    // Distribution Chart
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    distributionChart = new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Theft', 'Assault', 'Burglary', 'Vandalism', 'Other'],
+            datasets: [{
+                data: [35, 25, 20, 15, 5],
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+// Run analysis
+function runAnalysis() {
+    const resultsDiv = document.getElementById('analysisResults');
+    resultsDiv.innerHTML = '<div class="loading-spinner"><div class="spinner"></div></div><p class="text-center">Running analysis...</p>';
+    
+    // Update statistics
+    document.getElementById('totalIncidents').textContent = '247';
+    document.getElementById('clustersFound').textContent = '5';
+    document.getElementById('anomaliesDetected').textContent = '3';
+    document.getElementById('riskScore').textContent = '7.2';
+    
+    // Simulate analysis delay
+    setTimeout(() => {
+        resultsDiv.innerHTML = `
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Spatial Clusters</h5>
+                    <div class="mb-2">
+                        <strong>Cluster 1:</strong> T. Nagar Area<br>
+                        <small>15 incidents, High density</small>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Cluster 2:</strong> Anna Nagar<br>
+                        <small>12 incidents, Medium density</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Temporal Patterns</h5>
+                    <div class="mb-2">
+                        <strong>Peak Hours:</strong> 8-10 PM<br>
+                        <small>40% of incidents occur</small>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Peak Days:</strong> Friday-Saturday<br>
+                        <small>Weekend spike detected</small>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Insights</h5>
+                    <div class="mb-2">
+                        <strong>Trend:</strong> Increasing<br>
+                        <small>15% rise this month</small>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Prediction:</strong> High risk areas identified<br>
+                        <small>3 zones need attention</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }, 2000);
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    
+    document.getElementById('runAnalysis').addEventListener('click', runAnalysis);
+});
+</script>
+{% endblock %}

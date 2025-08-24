@@ -13,7 +13,7 @@ SQLAlchemy==2.0.21
 geoalchemy2==0.14.7
 
 # Data Processing
-pandas==2.1.0
+pandas==2.2.3
 numpy==1.25.2
 geopandas==0.13.2
 shapely==2.0.1
