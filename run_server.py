@@ -23,7 +23,7 @@ try:
     print("✅ Flask app created successfully")
     print("🌐 Starting development server...")
     print("📍 URL: http://127.0.0.1:5000")
-    print("🔐 Login: admin@crimesense.com / admin123")
+    print("🔐 Login: kmd.zaheer2006@gmail.com / 244343")
     print("=" * 50)
     
     # Run the app with verbose output

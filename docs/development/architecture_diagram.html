@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Hotspot Project - Architecture Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8ece4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f8ece4;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .mermaid {
+            margin: 20px 0;
+            min-height: 600px;
+        }
+        .legend {
+            background-color: #f8ece4;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .legend-item {
+            margin: 10px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        .legend-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crime Hotspot Project - System Architecture</h1>
+        
+        <div class="mermaid">
+            graph TD
+                %% ===== Style Definitions =====
+                classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#0d47a1,font-weight:bold;
+                classDef backend fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20,font-weight:bold;
+                classDef database fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c,font-weight:bold;
+                classDef storage fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#e65100,font-weight:bold;
+                classDef external fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#212121,font-weight:bold;
+                classDef process fill:#e8eaf6,stroke:#3949ab,stroke-width:2px,color:#1a237e;
+                
+                %% ===== Frontend Components =====
+                subgraph "Frontend (Client-Side)"
+                    UI[("User Interface<br/>Templates & Static Files")]
+                    Forms[("Forms &<br/>User Input")]
+                    Maps[("Interactive Maps<br/>(Leaflet/OpenLayers)")]
+                    
+                    UI --> Forms
+                    UI --> Maps
+                end
+                
+                %% ===== Backend Components =====
+                subgraph "Backend (Server-Side)"
+                    WebServer[("Web Server<br/>(Gunicorn/Flask)")]
+                    
+                    subgraph "Application Layer"
+                        Auth[("Authentication<br/>& Authorization")]
+                        Routes[("Route Handlers<br/>(Blueprints)")]
+                        API[("RESTful API<br/>Endpoints")]
+                        
+                        Auth -->|Secures| Routes
+                        Routes -->|Handles| API
+                    end
+                    
+                    subgraph "Business Logic"
+                        Services[("Business Services<br/>& Utilities")]
+                        AI[("AI/ML Models<br/>(Pattern Recognition)")]
+                        
+                        Services -->|Uses| AI
+                    end
+                    
+                    WebServer --> ApplicationLayer
+                    ApplicationLayer --> BusinessLogic
+                end
+                
+                %% ===== Data Layer =====
+                subgraph "Data Layer"
+                    ORM[("ORM<br/>(SQLAlchemy)")]
+                    DB[("Database<br/>(PostgreSQL/SQLite)")]
+                    
+                    ORM -->|Interacts with| DB
+                end
+                
+                %% ===== Storage =====
+                subgraph "Storage"
+                    FileStorage[("File Storage<br/>(Crime Data, Maps)")]
+                    Cache[("Cache<br/>(Redis/Memcached)")]
+                end
+                
+                %% ===== External Services =====
+                subgraph "External Services"
+                    ExternalAPIs[("External APIs<br/>(Maps, Weather, etc.)")]
+                    AuthProvider[("OAuth/SSO
+                    Providers")]
+                end
+                
+                %% ===== Connections =====
+                UI <-->|HTTP/HTTPS| WebServer
+                API <-->|JSON/XML| ExternalAPIs
+                Auth <-->|OAuth/SSO| AuthProvider
+                Services <-->|Data Access| ORM
+                Services <-->|Read/Write| FileStorage
+                Services <-->|Cache| Cache
+                
+                %% Apply styles
+                class UI,Forms,Maps frontend;
+                class WebServer,Auth,Routes,API,Services,AI backend;
+                class ORM,DB database;
+                class FileStorage,Cache storage;
+                class ExternalAPIs,AuthProvider external;
+        </div>
+        
+        <div class="legend">
+            <h3>Architecture Overview</h3>
+            <div class="legend-item">
+                <strong>Frontend Layer:</strong> Handles user interaction and data visualization through responsive web interfaces.
+            </div>
+            <div class="legend-item">
+                <strong>Backend Layer:</strong> Manages application logic, request handling, and business processes.
+            </div>
+            <div class="legend-item">
+                <strong>Data Layer:</strong> Handles data persistence and retrieval through database management systems.
+            </div>
+            <div class="legend-item">
+                <strong>Storage:</strong> Manages file storage and caching for improved performance.
+            </div>
+            <div class="legend-item">
+                <strong>External Services:</strong> Integrates with third-party services for extended functionality.
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Crime Hotspot Project - Architecture Diagram | Generated on September 18, 2025</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

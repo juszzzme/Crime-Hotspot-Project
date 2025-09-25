@@ -4,7 +4,7 @@ from hashlib import sha1
 from datetime import datetime, timedelta
 from itsdangerous import URLSafeTimedSerializer
 
-from config import Config
+from app.config.settings import Config
 
 def generate_confirmation_token(email):
     """Generate a confirmation token for email verification."""

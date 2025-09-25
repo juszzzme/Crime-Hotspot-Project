@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Crime Predictions - Crime Hotspot Project</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Enhanced Hero Section */
+        .hero-section {
+            position: relative;
+            background: var(--primary-gradient);
+            color: white;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(10px, 10px); }
+        }
+
+        .hero-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .hero-stats {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .hero-buttons {
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .btn-hero-primary {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-hero-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-hero-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-hero-secondary:hover {
+            background: white;
+            color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Wave Divider */
+        .wave-divider {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            transform: rotate(180deg);
+        }
+
+        .wave-divider svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 80px;
+        }
+
+        .wave-divider .shape-fill {
+            fill: #f5f7fa;
+        }
+
+        /* Enhanced Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .gradient-card {
+            border-radius: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .gradient-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gradient-card:hover::before {
+            opacity: 1;
+        }
+
+        .gradient-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Progress Circle Enhancement */
+        .progress-circle {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .progress-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .progress-circle .progress-bg {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 12;
+        }
+
+        .progress-circle .progress-bar {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-dasharray: 565.48;
+            stroke-dashoffset: 565.48;
+            animation: progress 2s ease-in-out;
+        }
+
+        @keyframes progress {
+            to {
+                stroke-dashoffset: calc(565.48 - (565.48 * 85) / 100);
+            }
+        }
+
+        .progress-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-value .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2c3e50;
+            display: block;
+        }
+
+        .progress-value .label {
+            font-size: 1rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        /* Route Options Enhancement */
+        .route-option {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .route-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .route-option:hover::before {
+            left: 100%;
+        }
+
+        .route-option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .route-option.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        /* Interactive Elements */
+        .interactive-map {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+
+        .map-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            animation: slideUp 0.8s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-section {
+                min-height: 80vh;
+            }
+            
+            .progress-circle {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .btn-hero-primary,
+            .btn-hero-secondary {
+                padding: 0.75rem 1.5rem;
+                margin-bottom: 1rem;
+                width: 100%;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <!-- Enhanced Hero Section -->
+    <div class="hero-section">
+        <!-- Animated Background Particles -->
+        <div class="hero-particles" id="particles"></div>
+        
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title">AI Crime Predictions</h1>
+                        <p class="hero-subtitle">Advanced AI-powered crime prediction and risk assessment to keep you safe. Experience the future of public safety with real-time analytics and intelligent insights.</p>
+                        <div class="hero-buttons mb-5">
+                            <a href="#predictions" class="btn btn-hero-primary me-3">
+                                <i class="fas fa-bolt me-2"></i>View Predictions
+                            </a>
+                            <a href="#how-it-works" class="btn btn-hero-secondary">
+                                <i class="fas fa-info-circle me-2"></i>How It Works
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-stats">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="stat-number">92%</div>
+                                    <small>Prediction Accuracy</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="stat-number">47</div>
+                                    <small>Crimes Prevented</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="stat-number">14</div>
+                                    <small>High Risk Areas</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="stat-number">98%</div>
+                                    <small>User Satisfaction</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Wave Divider -->
+        <div class="wave-divider">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-5" id="predictions">
+        <!-- Statistics Overview -->
+        <div class="row g-4 mb-5 fade-in">
+            <div class="col-md-3">
+                <div class="gradient-card h-100 p-4 text-center" style="background: var(--primary-gradient);">
+                    <div class="stat-number">92%</div>
+                    <p class="mb-0">Prediction Accuracy</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="gradient-card h-100 p-4 text-center" style="background: var(--warning-gradient);">
+                    <div class="stat-number">14</div>
+                    <p class="mb-0">High Risk Areas</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="gradient-card h-100 p-4 text-center" style="background: var(--success-gradient);">
+                    <div class="stat-number">47</div>
+                    <p class="mb-0">Crimes Prevented</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="gradient-card h-100 p-4 text-center" style="background: var(--secondary-gradient);">
+                    <div class="stat-number">98%</div>
+                    <p class="mb-0">User Satisfaction</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Controls -->
+        <div class="glass-card p-4 mb-5 slide-up">
+            <h4 class="mb-4"><i class="fas fa-cogs me-2"></i>Generate Predictions</h4>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-map-marker-alt text-primary"></i></span>
+                        <input type="text" class="form-control" placeholder="Enter location or address">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Time Range</label>
+                    <select class="form-select">
+                        <option>Next 24 Hours</option>
+                        <option>Next 7 Days</option>
+                        <option>Next 30 Days</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Crime Type</label>
+                    <select class="form-select">
+                        <option>All Types</option>
+                        <option>Theft</option>
+                        <option>Assault</option>
+                        <option>Burglary</option>
+                        <option>Vandalism</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="generatePredictions" class="btn w-100" style="background: var(--primary-gradient); color: white; border-radius: 10px;">
+                        <i class="fas fa-search me-2"></i>Analyze
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- Risk Heatmap -->
+                <div class="glass-card p-4 mb-4 slide-up">
+                    <h4 class="mb-4"><i class="fas fa-fire me-2"></i>Risk Heatmap</h4>
+                    <div class="interactive-map">
+                        <div class="map-placeholder">
+                            <i class="fas fa-map"></i>
+                            <p class="mb-0">Interactive crime risk heatmap</p>
+                            <small>Real-time data visualization</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Route Options -->
+                <div class="glass-card p-4 slide-up">
+                    <h4 class="mb-4"><i class="fas fa-route me-2"></i>Route Options</h4>
+                    <div class="route-options">
+                        <div class="route-option active">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0 fw-semibold">Fastest Route</h6>
+                                <span class="badge text-white px-3 py-2" style="background: var(--success-gradient); border-radius: 20px;">Safest</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted mb-3">
+                                <span><i class="far fa-clock me-2"></i>15 min</span>
+                                <span><i class="fas fa-route me-2"></i>3.2 km</span>
+                                <span class="text-success"><i class="fas fa-shield-alt me-2"></i>Low Risk</span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 4px;">
+                                <div class="progress-bar" style="background: var(--success-gradient); width: 100%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="route-option">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0 fw-semibold">Alternative Route</h6>
+                                <span class="badge text-white px-3 py-2" style="background: var(--warning-gradient); border-radius: 20px;">Moderate Risk</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted mb-3">
+                                <span><i class="far fa-clock me-2"></i>12 min</span>
+                                <span><i class="fas fa-route me-2"></i>2.8 km</span>
+                                <span class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Medium Risk</span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 4px;">
+                                <div class="progress-bar" style="background: var(--warning-gradient); width: 65%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Safety Score -->
+                <div class="glass-card p-4 mb-4 text-center slide-up">
+                    <h4 class="mb-4"><i class="fas fa-shield-alt me-2"></i>Your Safety Score</h4>
+                    <div class="progress-circle mb-4">
+                        <svg>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle class="progress-bg" cx="100" cy="100" r="90"></circle>
+                            <circle class="progress-bar" cx="100" cy="100" r="90"></circle>
+                        </svg>
+                        <div class="progress-value">
+                            <span class="number">85</span>
+                            <span class="label">Very Safe</span>
+                        </div>
+                    </div>
+                    
+                    <div class="safety-factors text-start">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Crime Rate</span>
+                            <span class="fw-bold text-success">Low</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Police Presence</span>
+                            <span class="fw-bold text-success">High</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Lighting</span>
+                            <span class="fw-bold text-warning">Moderate</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Prediction Results -->
+                <div class="glass-card p-4 slide-up">
+                    <h4 class="mb-4"><i class="fas fa-chart-line me-2"></i>Prediction Results</h4>
+                    <div id="predictionResults">
+                        <div class="alert alert-info border-0" style="background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(41, 128, 185, 0.1) 100%);">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Select a location and click "Analyze" to see predictions
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);" id="how-it-works">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-3">How It Works</h2>
+                <p class="lead text-muted">Our AI analyzes multiple data points to keep you safe</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="glass-card h-100 text-center p-4">
+                        <div class="mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                                 style="width: 80px; height: 80px; background: var(--primary-gradient);">
+                                <i class="fas fa-chart-line text-white fs-2"></i>
+                            </div>
+                        </div>
+                        <h4 class="mb-3">Data Analysis</h4>
+                        <p class="text-muted">We analyze historical crime data, weather patterns, and time of day to predict potential risks.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card h-100 text-center p-4">
+                        <div class="mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                                 style="width: 80px; height: 80px; background: var(--secondary-gradient);">
+                                <i class="fas fa-robot text-white fs-2"></i>
+                            </div>
+                        </div>
+                        <h4 class="mb-3">AI Prediction</h4>
+                        <p class="text-muted">Our advanced AI models process the data to generate accurate risk assessments in real-time.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card h-100 text-center p-4">
+                        <div class="mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                                 style="width: 80px; height: 80px; background: var(--success-gradient);">
+                                <i class="fas fa-shield-alt text-white fs-2"></i>
+                            </div>
+                        </div>
+                        <h4 class="mb-3">Safety First</h4>
+                        <p class="text-muted">Get personalized safety recommendations and alternative routes to avoid high-risk areas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Route option selection
+        document.querySelectorAll('.route-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.route-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Generate predictions button
+        document.getElementById('generatePredictions')?.addEventListener('click', function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
+            
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-check me-2"></i>Complete';
+                button.style.background = 'var(--success-gradient)';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = 'var(--primary-gradient)';
+                    button.disabled = false;
+                }, 2000);
+                
+                // Show results
+                document.getElementById('predictionResults').innerHTML = `
+                    <div class="alert alert-success border-0 mb-3" style="background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(34, 139, 34, 0.1) 100%);">
+                        <i class="fas fa-check-circle me-2"></i>Analysis complete!
+                    </div>
+                    <div class="prediction-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-semibold">Theft Risk</h6>
+                            <span class="badge text-white px-2 py-1" style="background: var(--warning-gradient); border-radius: 15px;">Medium</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar" style="background: var(--warning-gradient); width: 65%;"></div>
+                        </div>
+                    </div>
+                    <div class="prediction-item mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-semibold">Assault Risk</h6>
+                            <span class="badge text-white px-2 py-1" style="background: var(--success-gradient); border-radius: 15px;">Low</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar" style="background: var(--success-gradient); width: 25%;"></div>
+                        </div>
+                    </div>
+                    <div class="prediction-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0 fw-semibold">Burglary Risk</h6>
+                            <span class="badge text-white px-2 py-1" style="background: var(--secondary-gradient); border-radius: 15px;">High</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar" style="background: var(--secondary-gradient); width: 80%;"></div>
+                        </div>
+                    </div>
+                `;
+            }, 1500);
+        });
+
+        // Initialize particles and animations
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // Smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Animate elements on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.slide-up, .fade-in').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'all 0.8s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

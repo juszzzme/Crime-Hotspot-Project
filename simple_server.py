@@ -18,7 +18,7 @@ try:
     
     print("✅ App created successfully")
     print("🌐 Starting server on http://127.0.0.1:5000")
-    print("🔐 Demo login: admin@crimesense.com / admin123")
+    print("🔐 Demo login: kmd.zaheer2006@gmail.com / 244343")
     print("=" * 50)
     
     # Run with minimal configuration

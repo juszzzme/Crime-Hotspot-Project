@@ -22,7 +22,7 @@ def login():
 
         # Demo credentials for immediate testing
         demo_credentials = {
-            'admin@crimesense.com': 'admin123',
+            'kmd.zaheer2006@gmail.com': '244343',
             'user@crimesense.com': 'user123',
             'demo@crimesense.com': 'demo123'
         }
@@ -41,7 +41,7 @@ def login():
                     first_name='Demo',
                     last_name='User',
                     is_active=True,
-                    is_admin=(email == 'admin@crimesense.com'),
+                    is_admin=(email == 'kmd.zaheer2006@gmail.com'),
                     email_confirmed=True
                 )
                 user.password = password  # This will hash it
