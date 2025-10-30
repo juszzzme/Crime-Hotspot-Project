@@ -1,5 +1,5 @@
 from flask import Flask
-from app.config.settings import Config
+from app.config import Config
 
 def create_app(config_class=Config):
     """Application factory function to create and configure the Flask app."""

@@ -666,6 +666,337 @@
         }
     </script>
 
+    <!-- Chatbot Widget -->
+    <div id="chatbot-container" class="chatbot-container">
+        <div class="chatbot-header">
+            <h5><i class="fas fa-robot me-2"></i>Safety Assistant</h5>
+            <button id="minimize-chat" class="btn btn-sm btn-link text-white"><i class="fas fa-minus"></i></button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+            <div class="chat-message bot">
+                <div class="message-content">
+                    Hello! I'm your safety assistant. How can I help you today?
+                </div>
+            </div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." class="form-control">
+            <button id="send-message" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+    
+    <button id="chatbot-toggle" class="chatbot-toggle">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <!-- Chatbot Styles -->
+    <style>
+    .chatbot-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 350px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        max-height: 500px;
+        overflow: hidden;
+        transform: translateY(100px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .chatbot-container.visible {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .chatbot-header {
+        background: linear-gradient(135deg, #3a7bd5 0%, #1e3c72 100%);
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .chatbot-header h5 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background-color: #f8f9fa;
+        max-height: 350px;
+    }
+
+    .chat-message {
+        margin-bottom: 15px;
+        display: flex;
+    }
+
+    .chat-message.user {
+        justify-content: flex-end;
+    }
+
+    .chat-message.bot {
+        justify-content: flex-start;
+    }
+
+    .message-content {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 18px;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+
+    .user .message-content {
+        background: #007bff;
+        color: white;
+        border-bottom-right-radius: 0;
+    }
+
+    .bot .message-content {
+        background: #e9ecef;
+        color: #212529;
+        border-bottom-left-radius: 0;
+    }
+
+    .chat-input {
+        display: flex;
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+
+    .chat-input input {
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 8px 15px;
+        margin-right: 10px;
+    }
+
+    .chat-input button {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .chatbot-toggle {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3a7bd5 0%, #1e3c72 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+    
+    .chatbot-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+    
+    .typing-indicator {
+        display: flex;
+        padding: 10px;
+        justify-content: flex-start;
+    }
+    
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        margin: 0 2px;
+        background-color: #6c757d;
+        border-radius: 50%;
+        animation: typing 1s infinite;
+    }
+    
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-5px); }
+    }
+    </style>
+
+    <!-- Chatbot JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.getElementById('chatbot-container');
+        const chatToggle = document.getElementById('chatbot-toggle');
+        const minimizeButton = document.getElementById('minimize-chat');
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-message');
+        let isChatOpen = false;
+        
+        // Toggle chat window
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            if (isChatOpen) {
+                chatContainer.classList.add('visible');
+                chatToggle.style.display = 'none';
+                userInput.focus();
+            } else {
+                chatContainer.classList.remove('visible');
+                setTimeout(() => {
+                    chatToggle.style.display = 'flex';
+                }, 300);
+            }
+        }
+        
+        // Add a message to the chat
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${isUser ? 'user' : 'bot'}`;
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    ${message.replace(/\n/g, '<br>')}
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Enhanced responses for the chatbot
+        const botResponses = {
+            'hello': 'Hello! Welcome to Crime Hotspot Project. I can help you explore our safety features and crime analysis tools. How can I assist you today?',
+            'hi': 'Hi there! I\'m your safety assistant for Crime Hotspot Project. You can ask me about our features, safety tips, or how to use our tools.',
+            'help': 'I can help you with:\n\n📊 **Crime Analysis** - View crime statistics and trends\n📍 **Interactive Maps** - Explore crime hotspots in different areas\n🚶 **Route Safety** - Get safety scores for your travel routes\n🔔 **Alerts** - Set up custom safety alerts for areas\n📱 **Mobile Access** - Access safety features on the go\n\nWhat would you like to know more about?',
+            'features': '🌟 **Crime Hotspot Project Features** 🌟\n\n🔍 **Crime Analytics**\n- View detailed crime statistics and trends\n- Analyze crime patterns over time\n- Compare crime rates across locations\n\n🗺️ **Interactive Maps**\n- Visualize crime hotspots\n- Filter by crime type and time period\n- View police station locations\n\n🚶 **Safety Routing**\n- Find safest routes between locations\n- Get real-time safety scores\n- Avoid high-crime areas\n\n🔔 **Alerts & Notifications**\n- Set up custom area alerts\n- Receive crime updates\n- Emergency contact information',
+            'safety tips': '🚨 **Safety Tips** 🚨\n\n🛣 **When Walking**\n- Stay in well-lit, populated areas\n- Be aware of your surroundings\n- Keep valuables out of sight\n- Walk with confidence\n\n🚗 **When Driving**\n- Keep doors locked and windows up\n- Park in well-lit areas\n- Have your keys ready when approaching your car\n- Check the back seat before entering\n\n🏠 **At Home**\n- Always lock doors and windows\n- Use security systems if available\n- Don\'t advertise when you\'re away\n- Get to know your neighbors',
+            'about': 'ℹ️ **About Crime Hotspot Project** ℹ️\n\nCrime Hotspot Project is a comprehensive safety platform that helps you:\n\n• Make informed decisions about your safety\n• Access real-time crime data\n• Plan safer routes\n• Stay updated on local crime trends\n\nOur mission is to create safer communities through data-driven insights and awareness.',
+            'contact': '📞 **Contact & Support**\n\nFor support or to report issues:\n📧 Email: support@crimehotspot.com\n📞 Phone: (555) 123-4567\n🕒 Hours: Mon-Fri, 9AM-6PM\n\nFor emergencies, please contact your local authorities immediately.',
+            'thank': 'You\'re welcome! Stay safe and feel free to ask if you need anything else. Remember, your safety is our priority! 😊',
+            'default': 'I\'m here to help you with:\n\n🔹 Crime data and statistics\n🔹 Safety tips and advice\n🔹 Route planning and safety scores\n🔹 Using our platform\n🔹 General inquiries\n\nHow can I assist you today?'
+        };
+
+        // Get bot response with enhanced keyword matching
+        function getBotResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Check for keywords in the message
+            if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                return botResponses['hello'];
+            } else if (message.includes('help')) {
+                return botResponses['help'];
+            } else if ((message.includes('safety') && message.includes('tip')) || 
+                      message.includes('safe') || message.includes('precautions')) {
+                return botResponses['safety tips'];
+            } else if (message.includes('feature') || message.includes('what can you do') || 
+                     message.includes('functionality') || message.includes('capabilities')) {
+                return botResponses['features'];
+            } else if (message.includes('about') || message.includes('what is this') || 
+                     message.includes('project') || message.includes('platform')) {
+                return botResponses['about'];
+            } else if (message.includes('contact') || message.includes('support') || 
+                     message.includes('help desk') || message.includes('customer service')) {
+                return botResponses['contact'];
+            } else if (message.includes('thank') || message.includes('thanks') || 
+                     message.includes('appreciate')) {
+                return botResponses['thank'];
+            } else if (message.includes('crime') || message.includes('statistics') || 
+                     message.includes('data') || message.includes('analysis')) {
+                return '🔍 **Crime Data & Analysis** 🔎\\n\\nOur platform provides comprehensive crime data including:\\n\\n• Historical crime trends\\n• Crime type breakdowns\\n• Location-based statistics\\n• Time-based analysis\\n\\nYou can explore this data through our interactive maps and analytics dashboard.';
+            } else if (message.includes('map') || message.includes('hotspot') || 
+                     message.includes('location') || message.includes('area')) {
+                return '🗺️ **Interactive Maps** 🗺️\\n\\nOur interactive maps allow you to:\\n\\n• View crime hotspots in real-time\\n• Filter by crime type and date range\\n• See police station locations\\n• Get safety scores for areas\\n\\nWould you like to know how to use the map features?';
+            } else if (message.includes('route') || message.includes('directions') || 
+                     message.includes('navigate') || message.includes('path')) {
+                return '🚶 **Safe Route Planning** 🚗\\n\\nPlan safer journeys with our route features:\\n\\n• Get safety scores for different routes\\n• Avoid high-crime areas\\n• Find well-lit paths\\n• Save frequent routes\\n\\nWould you like help planning a safe route?';
+            } else {
+                return botResponses['default'];
+            }
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // Send message
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message) {
+                // Add user message
+                addMessage(message, true);
+                userInput.value = '';
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Simulate bot response after a delay
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const response = getBotResponse(message);
+                    addMessage(response, false);
+                }, 1000);
+            }
+        }
+        
+        // Event listeners
+        chatToggle.addEventListener('click', toggleChat);
+        minimizeButton.addEventListener('click', toggleChat);
+        
+        sendButton.addEventListener('click', sendMessage);
+        
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    });
+    </script>
+
     <!-- Unified Application JavaScript -->
     <script src="{{ url_for('static', filename='js/unified_app.js') }}"></script>
 

@@ -9,6 +9,8 @@ class Config:
     """Base configuration."""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-please-change-in-production'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'crime-hotspot-dev.db')
+    SQLALCHEMY_ECHO = True
     
     # Security
     SECURITY_PASSWORD_SALT = os.environ.get('SECURITY_PASSWORD_SALT')
@@ -23,7 +25,7 @@ class Config:
     
     # File uploads
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(basedir, 'static/uploads'))
-    MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
     
     # Map configuration
     MAPBOX_ACCESS_TOKEN = os.environ.get('MAPBOX_ACCESS_TOKEN')
